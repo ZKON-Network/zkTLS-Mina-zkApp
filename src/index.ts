@@ -1,3 +1,3 @@
-import { Add } from './Add.js';
+import { TestToken } from './ZkonToken';
 
-export { Add };
+export { TestToken };

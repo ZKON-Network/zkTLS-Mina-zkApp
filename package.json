@@ -20,7 +20,8 @@
     "format": "prettier --write --ignore-unknown **/*",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
-    "lint": "npx eslint src/* --fix"
+    "lint": "npx eslint src/* --fix",
+    "keygen": "node scripts/keygen.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
@@ -37,5 +38,8 @@
   },
   "peerDependencies": {
     "o1js": "0.17.*"
+  },
+  "dependencies": {
+    "mina-signer": "^3.0.5"
   }
 }
