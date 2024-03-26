@@ -1,3 +1,3 @@
-import { TestToken } from './ZkonToken';
+import { ZkonToken } from './ZkonToken';
 
-export { TestToken };
+export { ZkonToken };

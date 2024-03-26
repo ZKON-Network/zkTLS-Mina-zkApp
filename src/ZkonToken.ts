@@ -18,16 +18,16 @@ export class ZkonToken extends TokenContract {
     receiverAddress: PublicKey,
     amount: UInt64
   ) {
-    // const totalMinted = this.totalMinted.get();
-    // this.totalMinted.requireEquals(totalMinted);
+    const totalMinted = this.totalMinted.get();
+    this.totalMinted.requireEquals(totalMinted);
 
-    // const newTotalMinted = totalMinted.add(amount);
-    // this.maxSupply.requireEquals(this.maxSupply.get());
-    // newTotalMinted.assertLessThanOrEqual(this.maxSupply.get(),"Mint amount exceeds max supply");
+    const newTotalMinted = totalMinted.add(amount);
+    this.maxSupply.requireEquals(this.maxSupply.get());
+    newTotalMinted.assertLessThanOrEqual(this.maxSupply.get(),"Mint amount exceeds max supply");
 
     this.internal.mint({ address: receiverAddress, amount });
 
-    // this.totalMinted.set(newTotalMinted);
+    this.totalMinted.set(newTotalMinted);
   }
 
   @method async burn(
