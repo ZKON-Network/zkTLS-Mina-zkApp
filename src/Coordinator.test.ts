@@ -16,8 +16,10 @@ describe('Zkon Token Tests', () => {
     zkCoordinatorPrivateKey: PrivateKey,
     coordinator: ZkonRequestCoordinator,
     tokenId: Field,
+    feePrice: UInt64,
     treasuryAddress: PublicKey,
-    treasuryPrivateKey: PrivateKey;
+    treasuryPrivateKey: PrivateKey,
+    oracleAddress: PublicKey;    
 
   beforeAll(async () => {
     if (proofsEnabled) await ZkonToken.compile();
@@ -42,28 +44,69 @@ describe('Zkon Token Tests', () => {
     treasuryPrivateKey = PrivateKey.random();
     treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
 
+    oracleAddress = PrivateKey.random().toPublicKey();
+
+    feePrice = new UInt64(100);
+
   });
 
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount,2);
       token.deploy();
-      coordinator.deploy();      
+      coordinator.deploy();
     });
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
     await txn.sign([deployerKey, zktPrivateKey, zkCoordinatorPrivateKey]).send();
   }
 
+  async function initCoordinatorState(){
+    const txn = await Mina.transaction(deployerAccount, () => {
+      coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
+    });
+    await txn.prove();
+    await txn.sign([deployerKey]).send();
+  }
+
   it('Deploy & init coordinator', async () => {
     await localDeploy();
+    await initCoordinatorState();
+  });
 
-    // const txn = await Mina.transaction(deployerAccount, () => {
-    //   coordinator.initState(zktAddress, treasuryAddress, new UInt64(100));
-    // });
-    // await txn.prove();
-    // console.log(txn.toPretty())    
-    // await txn.sign([deployerKey]).send();
-  })
+  it('Send request', async () => {
+    await localDeploy();
+    await initCoordinatorState();
+
+    const initialSupply = new UInt64(1_000);
+        
+    let tx = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      token.mint(requesterAccount, initialSupply);
+    });
+    await tx.prove();
+    await tx.sign([deployerKey]).send();
+
+    let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
+    expect(requesterBalance).toEqual(initialSupply.toString());
+
+    const txn = await Mina.transaction(requesterAccount, () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      coordinator.sendRequest();
+    });
+    await txn.prove();
+    await txn.sign([requesterKey, deployerKey]).send();
+    
+    requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();    
+    expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
+
+    let treasuryBalance = await Mina.getBalance(treasuryAddress,tokenId).value.toString();    
+    expect(treasuryBalance).toEqual(feePrice.toString());
+
+    const events = await coordinator.fetchEvents();
+    const event = events[0].event.data.toFields(null)[0];    
+    expect(event.toString()).toEqual(new UInt64(22).toString()); //Mocked value
+
+  });
 
 });
