@@ -1,4 +1,4 @@
-import { ZkonToken } from './ZkonToken';
+import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64 } from 'o1js';
 
@@ -11,7 +11,7 @@ describe('Zkon Token Tests', () => {
     requesterKey: PrivateKey,
     zktAddress: PublicKey,
     zktPrivateKey: PrivateKey,
-    token: ZkonToken,
+    token: FungibleToken,
     zkCoordinatorAddress: PublicKey,
     zkCoordinatorPrivateKey: PrivateKey,
     coordinator: ZkonRequestCoordinator,
@@ -22,7 +22,7 @@ describe('Zkon Token Tests', () => {
     oracleAddress: PublicKey;    
 
   beforeAll(async () => {
-    if (proofsEnabled) await ZkonToken.compile();
+    if (proofsEnabled) await FungibleToken.compile();
   });
 
   beforeEach(() => {
@@ -34,7 +34,7 @@ describe('Zkon Token Tests', () => {
       Local.testAccounts[1]);
     zktPrivateKey = PrivateKey.random();
     zktAddress = zktPrivateKey.toPublicKey();
-    token = new ZkonToken(zktAddress);
+    token = new FungibleToken(zktAddress);
     tokenId = token.deriveTokenId();
 
     zkCoordinatorPrivateKey = PrivateKey.random();
@@ -51,9 +51,15 @@ describe('Zkon Token Tests', () => {
   });
 
   async function localDeploy() {
+    const totalSupply = UInt64.from(10_000_000);
     const txn = await Mina.transaction(deployerAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount,2);
-      token.deploy();
+      token.deploy({
+        owner: deployerAccount,
+        supply: totalSupply,
+        symbol: "ZKON",
+        src: ""
+      });
       coordinator.deploy();
     });
     await txn.prove();
