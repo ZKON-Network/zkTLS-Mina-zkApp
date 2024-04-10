@@ -1,5 +1,5 @@
 import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature } from 'o1js';
-import { ZkonToken } from './ZkonToken';
+import { FungibleToken } from 'mina-fungible-token';
 
 class PendingRequest extends Struct({
    requestId: Field,
@@ -39,7 +39,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   async sendRequest() {
 
     this.zkonToken.requireEquals(this.zkonToken.get());    
-    const ZkToken = new ZkonToken(this.zkonToken.get());
+    const ZkToken = new FungibleToken(this.zkonToken.get());
     
     this.feePrice.requireEquals(this.feePrice.get());
     const amountToSend = this.feePrice.get();

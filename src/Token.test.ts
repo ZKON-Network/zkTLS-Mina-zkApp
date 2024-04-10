@@ -1,4 +1,5 @@
-import { ZkonToken } from './ZkonToken';
+// import { ZkonToken } from './ZkonToken';
+import { FungibleToken } from 'mina-fungible-token';
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64 } from 'o1js';
 
 let proofsEnabled = false;
@@ -10,12 +11,14 @@ describe('Zkon Token Tests', () => {
     receiverKey: PrivateKey,
     zktAddress: PublicKey,
     zktPrivateKey: PrivateKey,
-    token: ZkonToken,
+    token: FungibleToken,
     tokenId: Field;
 
   beforeAll(async () => {
-    if (proofsEnabled) await ZkonToken.compile();
+    if (proofsEnabled) await FungibleToken.compile();
   });
+
+  const totalSupply = UInt64.from(10_000_000);
 
   beforeEach(() => {
     const Local = Mina.LocalBlockchain({ proofsEnabled });
@@ -26,14 +29,19 @@ describe('Zkon Token Tests', () => {
       Local.testAccounts[1]);
     zktPrivateKey = PrivateKey.random();
     zktAddress = zktPrivateKey.toPublicKey();
-    token = new ZkonToken(zktAddress);
+    token = new FungibleToken(zktAddress);
     tokenId = token.deriveTokenId();
   });
 
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.deploy();
+      token.deploy({
+        owner: deployerAccount,
+        supply: totalSupply,
+        symbol: "ZKON",
+        src: ""
+      });
     });
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
@@ -43,18 +51,16 @@ describe('Zkon Token Tests', () => {
   it('Deploy and mint ZkonToken', async () => {
     await localDeploy();
 
-    const initialSupply = new UInt64(1_000_000);
-        
     let tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(deployerAccount, initialSupply);
+      token.mint(deployerAccount, totalSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();
 
     let ownerBalance = Mina.getBalance(deployerAccount,tokenId).value.toString();
     
-    expect(ownerBalance).toEqual(initialSupply.toString());
+    expect(ownerBalance).toEqual(totalSupply.toString());
 
     const trfAmount = new UInt64(1_000);
     let trfTx = await Mina.transaction(deployerAccount, async () => {
@@ -67,7 +73,7 @@ describe('Zkon Token Tests', () => {
     ownerBalance = Mina.getBalance(deployerAccount,tokenId).value.toString();
     const receiverBalance = Mina.getBalance(receiverAccount,tokenId).value.toString();
 
-    expect(ownerBalance).toEqual(initialSupply.sub(trfAmount).toString());
+    expect(ownerBalance).toEqual(totalSupply.sub(trfAmount).toString());
     expect(receiverBalance).toEqual(trfAmount.toString());
   })
 

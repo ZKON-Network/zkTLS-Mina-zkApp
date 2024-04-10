@@ -40,6 +40,7 @@
     "o1js": "0.17.*"
   },
   "dependencies": {
+    "mina-fungible-token": "^0.1.0-beta.3",
     "mina-signer": "^3.0.5"
   }
 }
