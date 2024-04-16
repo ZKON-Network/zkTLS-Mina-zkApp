@@ -110,8 +110,8 @@ describe('Zkon Token Tests', () => {
     expect(treasuryBalance).toEqual(feePrice.toString());
 
     const events = await coordinator.fetchEvents();
-    const event = events[0].event.data.toFields(null)[0];    
-    expect(event.toString()).toEqual(new UInt64(22).toString()); //Mocked value
+    const event = events[0].event.data.toFields(null)[0];
+    expect(event).toEqual(Field(1));
 
   });
 

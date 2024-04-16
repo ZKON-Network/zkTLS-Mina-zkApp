@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature, Keccak, Hash, Bytes } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 
 class PendingRequest extends Struct({
@@ -11,7 +11,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   @state(PublicKey) zkonToken = State<PublicKey>();
   @state(PublicKey) treasury = State<PublicKey>();
   @state(UInt64) feePrice = State<UInt64>();
-  @state(PendingRequest) pendingRequests = State<PendingRequest[]>();
+  @state(UInt64) requestCount = State<UInt64>();
   
   events = {
     requested: UInt64,
@@ -25,6 +25,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.treasury.set(treasury);
     this.zkonToken.set(zkTokenAddress);
     this.oracle.set(oracle);
+    this.requestCount.set(new UInt64(1));
   }
 
   @method setFeePrice(feePrice: UInt64) {
@@ -47,13 +48,14 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.treasury.requireEquals(this.treasury.get());
     ZkToken.transfer(this.sender, this.treasury.get(), amountToSend);
 
-    //TODO save pending request
+    //TODO save pending request    
+    this.requestCount.set(this.requestCount.getAndRequireEquals().add(1));
     
-    this.emitEvent('requested', new UInt64(22));
+    this.emitEvent('requested', this.requestCount.get());
   }
 
   @method
-  async recordRequestFullfillment(signature: Signature) {
+  async recordRequestFullfillment(requestId: UInt64,signature: Signature) {
     // Verify "ownership" of the request
 
     // Evaluate whether the signature is valid for the provided data
@@ -64,7 +66,7 @@ export class ZkonRequestCoordinator extends SmartContract {
 
     // ToDo delete pending request
 
-    this.emitEvent('fullfilled', new UInt64(22));
+    this.emitEvent('fullfilled', requestId);
   }
 
 }
