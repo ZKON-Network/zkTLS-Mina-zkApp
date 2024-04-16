@@ -1,6 +1,7 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64 } from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes } from 'o1js';
+import {Zkon, Request} from './Zkon'
 
 let proofsEnabled = false;
 
@@ -96,9 +97,16 @@ describe('Zkon Token Tests', () => {
     let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
     expect(requesterBalance).toEqual(initialSupply.toString());
 
+    const callbackFunc = Bytes.from(Bytes.fromString("callbackFunctionSignature()"));
+    let request = new Request({
+      id: new UInt64(1),
+      callbackAddress: PrivateKey.random().toPublicKey(),
+      callbackFunctionId: callbackFunc
+    })
+
     const txn = await Mina.transaction(requesterAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      coordinator.sendRequest();
+      coordinator.sendRequest(request);
     });
     await txn.prove();
     await txn.sign([requesterKey, deployerKey]).send();
