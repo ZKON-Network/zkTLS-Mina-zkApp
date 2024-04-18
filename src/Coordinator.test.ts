@@ -1,7 +1,7 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes, Poseidon } from 'o1js';
-import {Zkon, Request} from './Zkon'
+import { Request} from './Zkon-lib'
 
 let proofsEnabled = false;
 

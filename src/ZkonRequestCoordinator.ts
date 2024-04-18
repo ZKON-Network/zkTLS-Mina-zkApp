@@ -1,11 +1,6 @@
 import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature, Keccak, Hash, Bytes, Provable } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
-import { Zkon, Request } from './Zkon';
-
-class PendingRequest extends Struct({
-   requestId: Field,
-   requester: PublicKey   
-}) {}
+import { Request } from './Zkon-lib';
 
 export class ZkonRequestCoordinator extends SmartContract {
   @state(PublicKey) oracle = State<PublicKey>();
@@ -49,10 +44,9 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.treasury.requireEquals(this.treasury.get());
     ZkToken.transfer(this.sender, this.treasury.get(), amountToSend);
 
-    //TODO save pending request
-    const currentRequestCount = this.requestCount.getAndRequireEquals();
-
+    const currentRequestCount = this.requestCount.getAndRequireEquals();    
     const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
+    //TODO save pending request
 
     this.emitEvent('requested', requestId);
     
@@ -60,7 +54,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   }
 
   @method
-  async recordRequestFullfillment(requestId: UInt64,signature: Signature) {
+  async recordRequestFullfillment(requestId: Field,signature: Signature) {
     // Verify "ownership" of the request
 
     // Evaluate whether the signature is valid for the provided data

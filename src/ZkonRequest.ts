@@ -1,6 +1,6 @@
-import { SmartContract, PublicKey, Struct, UInt64, Bytes, state, State, method, PrivateKey } from 'o1js';
+import { SmartContract, PublicKey, Struct, UInt64, Bytes, state, State, method, PrivateKey, Signature, Field } from 'o1js';
 import {ZkonRequestCoordinator} from './ZkonRequestCoordinator';
-import {Zkon, Request} from './Zkon';
+import {initialize, Request} from './Zkon-lib';
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();
@@ -28,8 +28,7 @@ export class ZkonRequest extends SmartContract {
     url: string,
     path: string
   ) {
-    const zkon = new Zkon(PrivateKey.random().toPublicKey()); //Review
-    return zkon.initialize(
+    return initialize(
       jobId,
       callbackAddr,
       callbackFunctionSignature,
@@ -48,6 +47,17 @@ export class ZkonRequest extends SmartContract {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
 
-    await coordinator.sendRequest(req);
+    return await coordinator.sendRequest(req);
+  }
+
+  /**
+   * @notice Validates the request
+   */
+  @method
+  async recordRequestFulfillment(requestId: Field, signature: Signature) {
+    const coordinatorAddress = this.coordinator.getAndRequireEquals();
+    const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
+
+    coordinator.recordRequestFullfillment(requestId, signature);
   }
 }
