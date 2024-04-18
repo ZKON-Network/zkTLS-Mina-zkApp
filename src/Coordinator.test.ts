@@ -1,6 +1,6 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes } from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes, Poseidon } from 'o1js';
 import {Zkon, Request} from './Zkon'
 
 let proofsEnabled = false;
@@ -101,7 +101,9 @@ describe('Zkon Token Tests', () => {
     let request = new Request({
       id: new UInt64(1),
       callbackAddress: PrivateKey.random().toPublicKey(),
-      callbackFunctionId: callbackFunc
+      callbackFunctionId: callbackFunc,
+      url: "testUrl",
+      path: "somePath"
     })
 
     const txn = await Mina.transaction(requesterAccount, () => {
@@ -119,7 +121,8 @@ describe('Zkon Token Tests', () => {
 
     const events = await coordinator.fetchEvents();
     const event = events[0].event.data.toFields(null)[0];
-    expect(event).toEqual(Field(1));
+    const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])
+    expect(event).toEqual(expectedRequestId);
 
   });
 

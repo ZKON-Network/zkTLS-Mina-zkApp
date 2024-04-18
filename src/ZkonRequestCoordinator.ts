@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature, Keccak, Hash, Bytes } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature, Keccak, Hash, Bytes, Provable } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { Zkon, Request } from './Zkon';
 
@@ -15,8 +15,8 @@ export class ZkonRequestCoordinator extends SmartContract {
   @state(UInt64) requestCount = State<UInt64>();
   
   events = {
-    requested: UInt64,
-    fullfilled: UInt64
+    requested: Field,
+    fullfilled: Field
   };
 
   @method
@@ -50,9 +50,13 @@ export class ZkonRequestCoordinator extends SmartContract {
     ZkToken.transfer(this.sender, this.treasury.get(), amountToSend);
 
     //TODO save pending request
-    this.requestCount.set(this.requestCount.getAndRequireEquals().add(1));
+    const currentRequestCount = this.requestCount.getAndRequireEquals();
+
+    const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
+
+    this.emitEvent('requested', requestId);
     
-    this.emitEvent('requested', this.requestCount.get());
+    this.requestCount.set(currentRequestCount.add(1));
   }
 
   @method

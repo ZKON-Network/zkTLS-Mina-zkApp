@@ -3,16 +3,17 @@ import { SmartContract, PublicKey, Struct, UInt64, Bytes } from 'o1js';
 export class Request extends Struct({
    id: UInt64,
    callbackAddress: PublicKey,
-   callbackFunctionId: Bytes.from
+   callbackFunctionId: Bytes.from,
+   url: String,
+   path: String
 }) {}
 
-export class Zkon extends SmartContract { 
-  
+export class Zkon extends SmartContract {
   events = {
     requested: UInt64,
-    fullfilled: UInt64
+    fullfilled: UInt64,
   };
-  
+
   init() {
     super.init();
   }
@@ -27,12 +28,21 @@ export class Zkon extends SmartContract {
    * @return The initialized request
    */
 
-  initialize(jobId: UInt64, callbackAddr: PublicKey, callbackFunc: Bytes) {
+  initialize(
+    jobId: UInt64,
+    callbackAddr: PublicKey,
+    callbackFunc: Bytes,
+    url: string,
+    path: string
+  ) {
     let request = new Request({
       id: jobId,
-      callbackAddress : callbackAddr,
-      callbackFunctionId : callbackFunc
-    })
-    
+      callbackAddress: callbackAddr,
+      callbackFunctionId: callbackFunc,
+      url: url,
+      path: path
+    });
+
+    return request;
   }
 }
