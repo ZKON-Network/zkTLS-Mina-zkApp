@@ -1,4 +1,3 @@
-// import { ZkonToken } from './ZkonToken';
 import { FungibleToken } from 'mina-fungible-token';
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64 } from 'o1js';
 

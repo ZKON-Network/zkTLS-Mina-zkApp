@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, PrivateKey, Mina, Poseidon, Struct, UInt64, Signature, Keccak, Hash, Bytes, Provable } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { Request } from './Zkon-lib';
 
