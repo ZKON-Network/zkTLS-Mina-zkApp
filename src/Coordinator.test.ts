@@ -121,6 +121,7 @@ describe('Zkon Token Tests', () => {
 
     const events = await coordinator.fetchEvents();
     const event = events[0].event.data.toFields(null)[0];
+    console.log(events);
     const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])
     expect(event).toEqual(expectedRequestId);
 

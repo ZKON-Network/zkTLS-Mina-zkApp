@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature, Reducer, assert } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { Request } from './Zkon-lib';
 
@@ -34,20 +34,16 @@ export class ZkonRequestCoordinator extends SmartContract {
 
   @method 
   async sendRequest(req: Request) {
+    
+    const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
+    
+    const amountToSend = this.feePrice.getAndRequireEquals();
 
-    this.zkonToken.requireEquals(this.zkonToken.get());    
-    const ZkToken = new FungibleToken(this.zkonToken.get());
-    
-    this.feePrice.requireEquals(this.feePrice.get());
-    const amountToSend = this.feePrice.get();
-    
-    this.treasury.requireEquals(this.treasury.get());
-    ZkToken.transfer(this.sender, this.treasury.get(), amountToSend);
+    ZkToken.transfer(this.sender, this.treasury.getAndRequireEquals(), amountToSend);
 
     const currentRequestCount = this.requestCount.getAndRequireEquals();    
     const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
-    //TODO save pending request
-
+    //TODO save pending request    
     this.emitEvent('requested', requestId);
     
     this.requestCount.set(currentRequestCount.add(1));
@@ -57,13 +53,19 @@ export class ZkonRequestCoordinator extends SmartContract {
   async recordRequestFullfillment(requestId: Field,signature: Signature) {
     // Verify "ownership" of the request
 
+    const fetchedEvents = await this.fetchEvents(); //ToDo check if if possible to limit events amount
+
+    let requestEmited = fetchedEvents.some((req) => (req.type == 'requested' && req.event.data.toFields(null)[0] === requestId));
+    assert(requestEmited,"RequestId not found");
+
+    let requestFullfilled = fetchedEvents.some((req) => (req.type == 'fullfilled' && req.event.data.toFields(null)[0] === requestId));
+    assert(!requestFullfilled,"RequestId already fullfilled");
+
     // Evaluate whether the signature is valid for the provided data
     this.oracle.requireEquals(this.oracle.get());
     const validSignature = signature.verify(this.oracle.get(),[]);
     // Check that the signature is valid
-    validSignature.assertTrue("Signature is not valid");
-
-    // ToDo delete pending request
+    validSignature.assertTrue("Signature is not valid");    
 
     this.emitEvent('fullfilled', requestId);
   }
