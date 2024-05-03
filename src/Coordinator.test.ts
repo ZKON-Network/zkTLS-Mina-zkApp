@@ -1,6 +1,6 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes, Poseidon } from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes, Poseidon, Bool } from 'o1js';
 import { Request} from './Zkon-lib'
 
 let proofsEnabled = false;
@@ -121,10 +121,56 @@ describe('Zkon Token Tests', () => {
 
     const events = await coordinator.fetchEvents();
     const event = events[0].event.data.toFields(null)[0];
-    console.log(events);
     const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])
     expect(event).toEqual(expectedRequestId);
 
   });
 
+  it('Fullfill request', async () => {
+    await localDeploy();
+    await initCoordinatorState();
+
+    const initialSupply = new UInt64(1_000);
+        
+    let tx = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      token.mint(requesterAccount, initialSupply);
+    });
+    await tx.prove();
+    await tx.sign([deployerKey]).send();
+
+    let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
+    expect(requesterBalance).toEqual(initialSupply.toString());
+
+    const callbackFunc = Bytes.from(Bytes.fromString("callbackFunctionSignature()"));
+    let request = new Request({
+      id: new UInt64(1),
+      callbackAddress: PrivateKey.random().toPublicKey(),
+      callbackFunctionId: callbackFunc,
+      url: "testUrl",
+      path: "somePath"
+    })
+
+    const txn = await Mina.transaction(requesterAccount, () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      coordinator.sendRequest(request);
+    });
+    await txn.prove();
+    await txn.sign([requesterKey, deployerKey]).send();
+
+    const events = await coordinator.fetchEvents();
+    const event = events[0].event.data.toFields(null)[0];    
+    const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])
+    expect(event).toEqual(expectedRequestId);
+
+    console.log(expectedRequestId);
+    console.log(event);
+    console.log(event.assertEquals(expectedRequestId),"Values not equals");
+    const fullfillTxn = await Mina.transaction(requesterAccount, () => {
+      coordinator.recordRequestFullfillment(expectedRequestId);
+    });
+    await fullfillTxn.prove();
+    await fullfillTxn.sign([requesterKey]).send();
+
+  });
 });

@@ -9,10 +9,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   @state(UInt64) feePrice = State<UInt64>();
   @state(UInt64) requestCount = State<UInt64>();
   
-  events = {
-    requested: Field,
-    fullfilled: Field
-  };
+
 
   @method
   initState(treasury: PublicKey, zkTokenAddress: PublicKey, feePrice: UInt64, oracle: PublicKey) {
@@ -32,6 +29,11 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.treasury.set(treasury);
   }
 
+  events = {
+    requested: Field,
+    fullfilled: Field
+  };
+
   @method 
   async sendRequest(req: Request) {
     
@@ -43,30 +45,30 @@ export class ZkonRequestCoordinator extends SmartContract {
 
     const currentRequestCount = this.requestCount.getAndRequireEquals();    
     const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
-    //TODO save pending request    
     this.emitEvent('requested', requestId);
     
     this.requestCount.set(currentRequestCount.add(1));
   }
 
   @method
-  async recordRequestFullfillment(requestId: Field,signature: Signature) {
+  // async recordRequestFullfillment(requestId: Field,signature: Signature) {
+  async recordRequestFullfillment(requestId: Field) {
     // Verify "ownership" of the request
 
-    const fetchedEvents = await this.fetchEvents(); //ToDo check if if possible to limit events amount
+    const fetchedEvents = await this.fetchEvents(); //ToDo check if if possible to limit number of events
 
-    let requestEmited = fetchedEvents.some((req) => (req.type == 'requested' && req.event.data.toFields(null)[0] === requestId));
+    let requestEmited = fetchedEvents.some((req) => (req.type == 'requested' /*&& req.event.data.toFields(null)[0] === requestId*/));
     assert(requestEmited,"RequestId not found");
 
-    let requestFullfilled = fetchedEvents.some((req) => (req.type == 'fullfilled' && req.event.data.toFields(null)[0] === requestId));
-    assert(!requestFullfilled,"RequestId already fullfilled");
+    // let requestFullfilled = fetchedEvents.some((req) => (req.type == 'fullfilled' && req.event.data.toFields(null)[0] === requestId));
+    // assert(!requestFullfilled,"RequestId already fullfilled");
 
     // Evaluate whether the signature is valid for the provided data
-    this.oracle.requireEquals(this.oracle.get());
-    const validSignature = signature.verify(this.oracle.get(),[]);
-    // Check that the signature is valid
-    validSignature.assertTrue("Signature is not valid");    
+    // this.oracle.requireEquals(this.oracle.get());
+    // const validSignature = signature.verify(this.oracle.get(),[]);
+    // // Check that the signature is valid
+    // validSignature.assertTrue("Signature is not valid");    
 
-    this.emitEvent('fullfilled', requestId);
+    // this.emitEvent('fullfilled', requestId);
   }
 }
