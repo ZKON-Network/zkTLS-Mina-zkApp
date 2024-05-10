@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature, Reducer, assert, Struct, UInt32, Circuit, Provable, Bool } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature, Reducer, assert, Struct, UInt32, Circuit, Provable, Bool, Proof } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { Request } from './Zkon-lib.js';
 
@@ -51,39 +51,46 @@ export class ZkonRequestCoordinator extends SmartContract {
   }  
 
   @method
-  // async recordRequestFullfillment(requestId: Field,signature: Signature) { //add Proof del zkProgram as parameter
+  // async recordRequestFullfillment(requestId: Field,proof: ZKProgramPoof) { 
   async recordRequestFullfillment(requestId: Field) {
     // Verify "ownership" of the request
-    const blockNr = UInt32.from(0) //ToDo Check how to get last block
-    const startBlock = UInt32.from(blockNr)
-    const endBlock = blockNr >= MAX_BLOCKS_TO_CHECK ? (blockNr.sub(MAX_BLOCKS_TO_CHECK)) : UInt32.from(0);
-
+    
     const fetchedEvents = await this.fetchEvents();
 
-    // let requestEmited = fetchedEvents.some(
-    //   (req) =>      
-    //     req.type == 'requested' 
-    //     // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined ? true : false)
-    //     // && requestId === req.event.data.toFields(null)[0]
-    //     // && requestId.equals(req.event.data.toFields(null)[0])
-    // );    
+    // /* Checks if requestId exists */
+    // assert(
+    //   fetchedEvents.some(
+    //     (req) =>
+    //       req.type == 'requested' 
+    //       // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
+    //       //   ? true
+    //       //   : false) 
+    //         // && requestId === req.event.data.toFields(null)[0]
+    //         // && requestId.equals(req.event.data.toFields(null)[0])
+    //   ),
+    //   'RequestId not found'
+    // );
 
-    // assert(requestEmited,"RequestId not found");
+    /* Checks if requestId has been fullfilled */
+    // assert(
+    //   fetchedEvents.some(
+    //     (req) =>
+    //       req.type == 'fullfilled' 
+    //       // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
+    //       //   ? true
+    //       //   : false) 
+    //         // && requestId === req.event.data.toFields(null)[0]
+    //         // && requestId.equals(req.event.data.toFields(null)[0])
+    //   ),
+    //   'RequestId already fullfilled'
+    // );
 
-    // let requestFullfilled = fetchedEvents.some((req) => (req.type == 'fullfilled' && req.event.data.toFields(null)[0] === requestId));
-    // assert(!requestFullfilled,"RequestId already fullfilled");
-
-    // Evaluate whether the signature is valid for the provided data
-    // this.oracle.requireEquals(this.oracle.get());
-    // const validSignature = signature.verify(this.oracle.get(),[]);
-    // // Check that the signature is valid
-    // validSignature.assertTrue("Signature is not valid");    
-
-    this.emitEvent('fullfilled', requestId);
+    this.emitEvent('fullfilled', Field(1)); //ToDo parameter for the event
   }
 
   @method
   async fakeEvent() {
-    this.emitEvent('fullfilled', Field(1));
+    // const fetchedEvents = await this.fetchEvents();
+    this.emitEvent('fullfilled', Field(1)); 
   }
 }

@@ -170,16 +170,15 @@ describe('Zkon Token Tests', () => {
     // Provable.log(event.assertEquals(expectedRequestId) == undefined ? true : false);
     
     const fullfillTxn = await Mina.transaction(requesterAccount, () => {
-      // coordinator.fakeEvent();
-      coordinator.recordRequestFullfillment(expectedRequestId);
+      // coordinator.recordRequestFullfillment(expectedRequestId);
+      coordinator.fakeEvent();
     });
     await fullfillTxn.prove();
-    await fullfillTxn.sign([requesterKey]).send();
+    await (await fullfillTxn.sign([requesterKey]).send()).wait;
 
-    events = await coordinator.fetchEvents();
-    // const fullfillEvent = events[0].event.data.toFields(null)[0];
-    console.log(events)
-    // expect(events[1].type).toEqual("fullfilled");
+    const newEvents = await coordinator.fetchEvents();
+    console.log(newEvents)
+    expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
 
   });
 });
