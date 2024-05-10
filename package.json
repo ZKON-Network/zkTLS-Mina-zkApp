@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "mina-fungible-token": "^0.1.0-beta.3",
-    "mina-signer": "^3.0.5"
+    "mina-signer": "^3.0.5",
+    "zkapp-cli": "^0.20.2"
   }
 }

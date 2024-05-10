@@ -1,6 +1,6 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes, Poseidon, Bool } from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Bytes, Poseidon, Bool, Provable, Signature, fetchEvents } from 'o1js';
 import { Request} from './Zkon-lib'
 
 let proofsEnabled = false;
@@ -158,19 +158,28 @@ describe('Zkon Token Tests', () => {
     await txn.prove();
     await txn.sign([requesterKey, deployerKey]).send();
 
-    const events = await coordinator.fetchEvents();
-    const event = events[0].event.data.toFields(null)[0];    
-    const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])
-    expect(event).toEqual(expectedRequestId);
-
-    console.log(expectedRequestId);
-    console.log(event);
-    console.log(event.assertEquals(expectedRequestId),"Values not equals");
+    let events = await coordinator.fetchEvents();
+    const requestEvent = events[0].event.data.toFields(null)[0];    
+    const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])    
+    expect(requestEvent).toEqual(expectedRequestId);
+    // Provable.log(event);
+    // Provable.log(expectedRequestId);
+    // Provable.log(expectedRequestId.equals(event));
+    // Provable.log(event == expectedRequestId);
+    // Provable.log(event === expectedRequestId);    
+    // Provable.log(event.assertEquals(expectedRequestId) == undefined ? true : false);
+    
     const fullfillTxn = await Mina.transaction(requesterAccount, () => {
+      // coordinator.fakeEvent();
       coordinator.recordRequestFullfillment(expectedRequestId);
     });
     await fullfillTxn.prove();
     await fullfillTxn.sign([requesterKey]).send();
+
+    events = await coordinator.fetchEvents();
+    // const fullfillEvent = events[0].event.data.toFields(null)[0];
+    console.log(events)
+    // expect(events[1].type).toEqual("fullfilled");
 
   });
 });
