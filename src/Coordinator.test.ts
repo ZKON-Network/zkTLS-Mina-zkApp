@@ -1,7 +1,6 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, ProvablePure, provablePure} from 'o1js';
-import { StringCircuitValue } from './utils/String'
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, CircuitString, provablePure} from 'o1js';
 
 let proofsEnabled = false;
 
@@ -187,13 +186,11 @@ describe('Zkon Token Tests', () => {
     const ipfsHash0 = ipfsHashFile.slice(0,30) // first part of the ipfsHash
     const ipfsHash1 = ipfsHashFile.slice(30) // second part of the ipfsHash
   
-    const ztring0 = new StringCircuitValue(ipfsHash0);
-    // const field0 = Field.fromBits(ztring0.toBits()); //NOT WORKING
-    const field1 = Field(1);
+    const ztring0 = CircuitString.fromString(ipfsHash0);
+    const field1 = ztring0.toFields()[0];
   
-    const ztring1 = new StringCircuitValue(ipfsHash1);
-    // const field1 = Field.fromBits(ztring1.toBits()); //NOT WORKING
-    const field2 = Field(2);
+    const ztring1 = CircuitString.fromString(ipfsHash1);
+    const field2 = ztring1.toFields()[0];
   
     return {field1, field2}
   }
