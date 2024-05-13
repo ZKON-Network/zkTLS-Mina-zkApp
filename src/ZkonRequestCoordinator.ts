@@ -1,8 +1,14 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature, Reducer, assert, Struct, UInt32, Circuit, Provable, Bool, Proof } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature, Reducer, assert, Struct, UInt32, Circuit, Provable, Bool, Proof, CircuitString, Bytes, Hash } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { Request } from './Zkon-lib.js';
 
 const MAX_BLOCKS_TO_CHECK = UInt32.from(50);
+
+class RequestEvent extends Struct ({
+  id: Field,
+  hash1: Field,
+  hash2: Field
+}) {}
 
 export class ZkonRequestCoordinator extends SmartContract {
   @state(PublicKey) oracle = State<PublicKey>();
@@ -30,12 +36,12 @@ export class ZkonRequestCoordinator extends SmartContract {
   }
 
   events = {
-    requested: Field,
+    requested: RequestEvent,
     fullfilled: Field
   };
 
   @method 
-  async sendRequest(req: Request) {
+  async sendRequest(hash1: Field, hash2: Field) {
     
     const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
     
@@ -45,7 +51,14 @@ export class ZkonRequestCoordinator extends SmartContract {
 
     const currentRequestCount = this.requestCount.getAndRequireEquals();    
     const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
-    this.emitEvent('requested', requestId);
+
+    const event = new RequestEvent({
+      id: requestId,
+      hash1: hash1,
+      hash2: hash2
+    });
+
+    this.emitEvent('requested', event);
     
     this.requestCount.set(currentRequestCount.add(1));
   }  
@@ -55,9 +68,10 @@ export class ZkonRequestCoordinator extends SmartContract {
   async recordRequestFullfillment(requestId: Field) {
     // Verify "ownership" of the request
     
-    const fetchedEvents = await this.fetchEvents();
+    // const fetchedEvents = await this.fetchEvents();
+    // assert(fetchedEvents.length > 0);
 
-    // /* Checks if requestId exists */
+    // // /* Checks if requestId exists */
     // assert(
     //   fetchedEvents.some(
     //     (req) =>
@@ -85,12 +99,13 @@ export class ZkonRequestCoordinator extends SmartContract {
     //   'RequestId already fullfilled'
     // );
 
-    this.emitEvent('fullfilled', Field(1)); //ToDo parameter for the event
+    this.emitEvent('fullfilled', requestId);
   }
 
   @method
   async fakeEvent() {
     // const fetchedEvents = await this.fetchEvents();
-    this.emitEvent('fullfilled', Field(1)); 
+    // assert(fetchedEvents.length > 0);
+    this.emitEvent('fullfilled', Field(1));
   }
 }
