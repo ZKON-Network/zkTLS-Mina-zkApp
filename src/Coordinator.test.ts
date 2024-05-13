@@ -116,7 +116,7 @@ describe('Zkon Token Tests', () => {
     expect(treasuryBalance).toEqual(feePrice.toString());
 
     const events = await coordinator.fetchEvents();
-    const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data) ;
+    const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data);
     console.log(requestEvent)
     const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])    
     expect(requestEvent[0]).toEqual(expectedRequestId);
