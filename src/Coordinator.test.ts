@@ -1,6 +1,7 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, CircuitString, provablePure} from 'o1js';
+import { StringCircuitValue } from './utils/String';
 
 let proofsEnabled = false;
 
@@ -132,13 +133,12 @@ describe('Zkon Token Tests', () => {
     const segmentedString = CircuitString.fromString(ipfsHash.slice(0,30));
     const segmentedStringFields = segmentedString.toFields();
 
+    console.log(ipfsHash.slice(0,30));
+    console.log(StringCircuitValue.fromField(new StringCircuitValue(ipfsHash.slice(0,30)).toField()).toString());
+
     // console.log("Original hash: ",ipfsHash)
     // console.log("Segmented hash: ", segmentedString)
     // console.log("Segmented ToField: ", segmentedStringFields)
-    console.log("Segmented ToField[0]: ", segmentedStringFields[0])
-    console.log("Segmented ToField[0]: ", segmentedStringFields[1])
-    console.log("Segmented ToField[0]: ", segmentedStringFields[2])
-    // console.log("Re decoded hash: ", segmentedString.toString())
     // console.log("Segmented hash part 1: ", segmentedHashPart1)
     // console.log("Segmented hash part 2: ", segmentedHashPart2)
 
