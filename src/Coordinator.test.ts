@@ -20,7 +20,7 @@ describe('Zkon Token Tests', () => {
     treasuryAddress: PublicKey,
     treasuryPrivateKey: PrivateKey,
     oracleAddress: PublicKey,
-    ipfsHashFile0: string;
+    ipfsHash: string;
 
   beforeAll(async () => {
     if (proofsEnabled) await FungibleToken.compile();
@@ -49,7 +49,7 @@ describe('Zkon Token Tests', () => {
 
     feePrice = new UInt64(100);
 
-    ipfsHashFile0 = 'bafybeibieq746jmc5ndf2fn24jhk4i2knzadbmb6eatvpnlhcrffzd46bi'
+    ipfsHash = 'bafybeibieq746jmc5ndf2fn24jhk4i2knzadbmb6eatvpnlhcrffzd46bi'
 
   });
 
@@ -99,7 +99,7 @@ describe('Zkon Token Tests', () => {
     let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
     expect(requesterBalance).toEqual(initialSupply.toString());
 
-    const ipfsHashSegmented0 = segmentHash(ipfsHashFile0)    
+    const ipfsHashSegmented0 = segmentHash(ipfsHash)
 
     const txn = await Mina.transaction(requesterAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount);
@@ -116,13 +116,39 @@ describe('Zkon Token Tests', () => {
 
     const events = await coordinator.fetchEvents();
     const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data);
-    console.log(requestEvent)
+    // console.log(requestEvent)
     const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])    
     expect(requestEvent[0]).toEqual(expectedRequestId);
     expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
     expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
-
+    // console.log(CircuitString.fromString(ipfsHash).toFields()[0])
   });
+
+  it('Encode/decode hash', async () =>{
+    const ipfsHashSegmented = segmentHash(ipfsHash)
+    const segmentedHashPart1 = ipfsHashSegmented.field1
+    const segmentedHashPart2 = ipfsHashSegmented.field2
+
+    const segmentedString = CircuitString.fromString(ipfsHash.slice(0,30));
+    const segmentedStringFields = segmentedString.toFields();
+
+    // console.log("Original hash: ",ipfsHash)
+    // console.log("Segmented hash: ", segmentedString)
+    // console.log("Segmented ToField: ", segmentedStringFields)
+    console.log("Segmented ToField[0]: ", segmentedStringFields[0])
+    console.log("Segmented ToField[0]: ", segmentedStringFields[1])
+    console.log("Segmented ToField[0]: ", segmentedStringFields[2])
+    // console.log("Re decoded hash: ", segmentedString.toString())
+    // console.log("Segmented hash part 1: ", segmentedHashPart1)
+    // console.log("Segmented hash part 2: ", segmentedHashPart2)
+
+
+    // const decodedHashPart1 = CircuitString.fromFields().toString().replace(/\0/g, '')
+    // console.log(decodedHashPart1)
+    // const hash2 = CircuitString.fromCharacters(fieldHash2.toBits()).toString().replace(/\0/g, '')
+    // console.log("Field 1", CircuitString.fromCharacters(fieldHash1.toBits()).values[5].toString())
+    
+  })
 
   // it('Fullfill request', async () => {
     // await localDeploy();
