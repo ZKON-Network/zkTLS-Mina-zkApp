@@ -41,7 +41,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   };
 
   @method 
-  async sendRequest(hash1: Field, hash2: Field) {
+  sendRequest(hash1: Field, hash2: Field): Field {
     
     const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
     
@@ -64,6 +64,8 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.emitEvent('requested', event);
     
     this.requestCount.set(currentRequestCount.add(1));
+
+    return requestId;
   }  
 
   @method

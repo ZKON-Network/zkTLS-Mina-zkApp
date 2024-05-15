@@ -1,36 +1,29 @@
-import { PublicKey, Struct, UInt64, Bytes } from 'o1js';
+import { PublicKey, Struct, UInt64, Bytes, Field } from 'o1js';
+import { StringCircuitValue } from './utils/String';
 
-export class Request extends Struct({
-   id: UInt64,
-   callbackAddress: PublicKey,
-   callbackFunctionId: Bytes.from,
-   url: String,
-   path: String
-}) {}
+//Request
+// {
+//   "callbackAddress": "callBackAdddress",
+//   "callbackFunctionId": "callBackFcnSignature",
+//   "baseUrl": "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD",
+//   "path": "RAW,ETH,USD,VOLUME24HOUR"
+// }
+
 
 /**
- * @notice Initializes a request
- * @dev Sets the ID, callback address, and callback function signature on the request
- * @param self The uninitialized request
- * @param jobId The Job Specification ID
- * @param callbackAddr The callback address
- * @param callbackFunc The callback function signature
- * @return The initialized request
+ * @notice Segment IPFS Hash in to parts of type Field 
+ * @param ipfsHash The ipfs hash pointing to the request 
+ * @return The 2 parts of the hash
  */
-export async function initialize(
-  jobId: UInt64,
-  callbackAddr: PublicKey,
-  callbackFunc: Bytes,
-  url: string,
-  path: string
-) : Promise<Request> {
-  let request = new Request({
-    id: jobId,
-    callbackAddress: callbackAddr,
-    callbackFunctionId: callbackFunc,
-    url: url,
-    path: path,
-  });
+export function segmentHash(
+  ipfsHash: string  
+) : {field1: Field;field2: Field} {
+  const ipfsHash0 = ipfsHash.slice(0,30) // first part of the ipfsHash
+  const ipfsHash1 = ipfsHash.slice(30) // second part of the ipfsHash
+    
+  const field1 = new StringCircuitValue(ipfsHash0).toField();
+  
+  const field2 = new StringCircuitValue(ipfsHash1).toField();
 
-  return request;
+  return {field1, field2}
 }

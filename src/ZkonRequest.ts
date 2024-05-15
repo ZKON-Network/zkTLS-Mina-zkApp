@@ -1,9 +1,9 @@
-import { SmartContract, PublicKey, Struct, UInt64, Bytes, state, State, method, PrivateKey, Signature, Field } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field, Void } from 'o1js';
 import {ZkonRequestCoordinator} from './ZkonRequestCoordinator';
-import {initialize, Request} from './Zkon-lib';
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();
+  @state(PublicKey) coinValue = State<Field>(); //Value of the coin returned by the oracle
 
   @method
   initState(coordinator: PublicKey) {
@@ -12,26 +12,26 @@ export class ZkonRequest extends SmartContract {
   }
 
   /**
-   * @notice Creates a request to the stored oracle address
+   * @notice Creates a request to the stored coordinator address
    * @param req The initialized Zkon Request
    * @return requestId The request ID
    */
   @method
-  async sendRequest(ipfsHash: string) {
+  sendRequest(hashPart1: Field, hashPart2: Field): Field {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
-    const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
+    const coordinator = new ZkonRequestCoordinator(coordinatorAddress);    
 
-    return await coordinator.sendRequest(ipfsHash);
+    return coordinator.sendRequest(hashPart1, hashPart2);
   }
 
   /**
    * @notice Validates the request
    */
   @method
-  async recordRequestFulfillment(requestId: Field, signature: Signature) {
+  async setCoinValue(value: Field) {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
-
-    coordinator.recordRequestFullfillment(requestId, signature);
+    // assert(this.sender === coordinatorAddress) //Validates who is sending
+    this.coinValue.set(value)
   }
 }

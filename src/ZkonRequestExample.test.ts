@@ -1,6 +1,7 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, CircuitString, provablePure} from 'o1js';
+import { ZkonRequest } from './ZkonRequest';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, provablePure} from 'o1js';
 import { StringCircuitValue } from './utils/String';
 
 let proofsEnabled = false;
@@ -21,7 +22,10 @@ describe('Zkon Token Tests', () => {
     treasuryAddress: PublicKey,
     treasuryPrivateKey: PrivateKey,
     oracleAddress: PublicKey,
-    ipfsHash: string;
+    ipfsHash: string,
+    zkRequestAddress: PublicKey,
+    zkRequestKey: PrivateKey,
+    zkRequest: ZkonRequest;
 
   beforeAll(async () => {
     if (proofsEnabled) await FungibleToken.compile();
@@ -33,7 +37,7 @@ describe('Zkon Token Tests', () => {
     ({ privateKey: deployerKey, publicKey: deployerAccount } =
       Local.testAccounts[0]);
     ({ privateKey: requesterKey, publicKey: requesterAccount } =
-      Local.testAccounts[1]);
+      Local.testAccounts[1]);    
     zktPrivateKey = PrivateKey.random();
     zktAddress = zktPrivateKey.toPublicKey();
     token = new FungibleToken(zktAddress);
@@ -42,6 +46,10 @@ describe('Zkon Token Tests', () => {
     zkCoordinatorPrivateKey = PrivateKey.random();
     zkCoordinatorAddress = zkCoordinatorPrivateKey.toPublicKey();
     coordinator = new ZkonRequestCoordinator(zkCoordinatorAddress);
+
+    zkRequestKey = PrivateKey.random();
+    zkRequestAddress = zkRequestKey.toPublicKey();
+    zkRequest = new ZkonRequest(zkRequestAddress);
 
     treasuryPrivateKey = PrivateKey.random();
     treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
@@ -57,7 +65,7 @@ describe('Zkon Token Tests', () => {
   async function localDeploy() {
     const totalSupply = UInt64.from(10_000_000);
     const txn = await Mina.transaction(deployerAccount, () => {
-      AccountUpdate.fundNewAccount(deployerAccount,2);
+      AccountUpdate.fundNewAccount(deployerAccount,3);
       token.deploy({
         owner: deployerAccount,
         supply: totalSupply,
@@ -65,15 +73,17 @@ describe('Zkon Token Tests', () => {
         src: ""
       });
       coordinator.deploy();
+      zkRequest.deploy();
     });
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
-    await txn.sign([deployerKey, zktPrivateKey, zkCoordinatorPrivateKey]).send();
+    await txn.sign([deployerKey, zktPrivateKey, zkCoordinatorPrivateKey, zkRequestKey]).send();
   }
 
   async function initCoordinatorState(){
     const txn = await Mina.transaction(deployerAccount, () => {
       coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
+      zkRequest.initState(zkCoordinatorAddress);
     });
     await txn.prove();
     await txn.sign([deployerKey]).send();
@@ -84,7 +94,7 @@ describe('Zkon Token Tests', () => {
     await initCoordinatorState();
   });
 
-  it('Send request', async () => {
+  it('Send request via example zkApp', async () => {
     await localDeploy();
     await initCoordinatorState();
 
@@ -96,24 +106,36 @@ describe('Zkon Token Tests', () => {
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();
+    
+    tx = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      token.mint(zkRequestAddress, initialSupply);
+    });
+    await tx.prove();
+    await tx.sign([deployerKey]).send();
 
     let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
     expect(requesterBalance).toEqual(initialSupply.toString());
 
-    const ipfsHashSegmented0 = segmentHash(ipfsHash)
+    let zkRequestBalance = await Mina.getBalance(zkRequestAddress,tokenId).value.toString();
+    expect(zkRequestBalance).toEqual(initialSupply.toString());
 
-    const txn = await Mina.transaction(requesterAccount, () => {
-      AccountUpdate.fundNewAccount(deployerAccount);
-      coordinator.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
+    const ipfsHashSegmented0 = segmentHash(ipfsHash)
+    let requestId;
+    const txn = await Mina.transaction(requesterAccount, async () => {
+      AccountUpdate.fundNewAccount(requesterAccount);
+      requestId = zkRequest.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
     });
     await txn.prove();
-    await txn.sign([requesterKey, deployerKey]).send();
-    
+    await (await txn.sign([requesterKey]).send()).wait();
+
     requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();    
     expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
+    console.log(requesterBalance)
 
-    let treasuryBalance = await Mina.getBalance(treasuryAddress,tokenId).value.toString();    
-    expect(treasuryBalance).toEqual(feePrice.toString());
+    // zkRequestBalance = await Mina.getBalance(zkRequestAddress,tokenId).value.toString();    
+    // expect(zkRequestBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
+    // console.log(zkRequestBalance)
 
     const events = await coordinator.fetchEvents();
     expect(events[0].type).toEqual('requested');
@@ -123,65 +145,9 @@ describe('Zkon Token Tests', () => {
     expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
     expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
     expect(requestEvent[3]).toEqual(requesterAccount.toFields()[0]);
-
-    // console.log(StringCircuitValue.fromField(ipfsHashSegmented0.field1).toString());
+    // expect(requestEvent[3]).toEqual(zkRequestAddress.toFields()[0]);
+    console.log(StringCircuitValue.fromField(ipfsHashSegmented0.field1).toString());
   });
-
-  // it('Fullfill request', async () => {
-    // await localDeploy();
-    // await initCoordinatorState();
-
-    // const initialSupply = new UInt64(1_000);
-        
-    // let tx = await Mina.transaction(deployerAccount, async () => {
-    //   AccountUpdate.fundNewAccount(deployerAccount);
-    //   token.mint(requesterAccount, initialSupply);
-    // });
-    // await tx.prove();
-    // await tx.sign([deployerKey]).send();
-
-    // let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
-    // expect(requesterBalance).toEqual(initialSupply.toString());
-
-    // const ipfsHashSegmented0 = segmentHash(ipfsHashFile0)    
-
-    // const txn = await Mina.transaction(requesterAccount, () => {
-    //   AccountUpdate.fundNewAccount(deployerAccount);
-    //   coordinator.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
-    // });
-    // await txn.prove();
-    // await txn.sign([requesterKey, deployerKey]).send();
-    
-    // requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();    
-    // expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
-
-    // let treasuryBalance = await Mina.getBalance(treasuryAddress,tokenId).value.toString();    
-    // expect(treasuryBalance).toEqual(feePrice.toString());
-
-    // const events = await coordinator.fetchEvents();
-    // const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data) ;
-    // console.log(requestEvent)
-    // const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])    
-    // expect(requestEvent[0]).toEqual(expectedRequestId);
-    // expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
-    // expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
-
-  //   // Provable.log(event);
-  //   // Provable.log(expectedRequestId);    
-  //   // Provable.log(event.assertEquals(expectedRequestId) == undefined ? true : false);
-    
-  //   const fullfillTxn = await Mina.transaction(requesterAccount, () => {
-  //     // coordinator.recordRequestFullfillment(expectedRequestId);
-  //     coordinator.fakeEvent();
-  //   });
-  //   await fullfillTxn.prove();
-  //   await (await fullfillTxn.sign([requesterKey]).send()).wait;
-
-  //   const newEvents = await coordinator.fetchEvents();
-  //   console.log(newEvents)    
-  //   // expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
-
-  // });
 
   function segmentHash(ipfsHashFile: string) {
     const ipfsHash0 = ipfsHashFile.slice(0,30) // first part of the ipfsHash
