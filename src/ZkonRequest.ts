@@ -20,7 +20,7 @@ export class ZkonRequest extends SmartContract {
   sendRequest(hashPart1: Field, hashPart2: Field): Field {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);    
-
+    
     return coordinator.sendRequest(hashPart1, hashPart2);
   }
 

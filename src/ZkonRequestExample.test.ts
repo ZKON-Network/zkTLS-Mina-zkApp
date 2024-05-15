@@ -145,7 +145,7 @@ describe('Zkon Token Tests', () => {
     expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
     expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
     expect(requestEvent[3]).toEqual(requesterAccount.toFields()[0]);
-    // expect(requestEvent[3]).toEqual(zkRequestAddress.toFields()[0]);
+    expect(requestEvent[3]).toEqual(zkRequestAddress.toFields()[0]);
     console.log(StringCircuitValue.fromField(ipfsHashSegmented0.field1).toString());
   });
 

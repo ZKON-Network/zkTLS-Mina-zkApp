@@ -52,7 +52,8 @@ export class ZkonRequestCoordinator extends SmartContract {
     const currentRequestCount = this.requestCount.getAndRequireEquals();    
     const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
 
-    const sender = this.sender;
+    const sender = this.self.body.publicKey;
+    // const sender = this.sender;
 
     const event = new RequestEvent({
       id: requestId,
