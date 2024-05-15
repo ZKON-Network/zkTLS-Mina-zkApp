@@ -116,39 +116,14 @@ describe('Zkon Token Tests', () => {
     expect(treasuryBalance).toEqual(feePrice.toString());
 
     const events = await coordinator.fetchEvents();
+    expect(events[0].type).toEqual('requested');
     const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data);
-    // console.log(requestEvent)
-    const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])    
+    const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]]);
     expect(requestEvent[0]).toEqual(expectedRequestId);
     expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
     expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
-    // console.log(CircuitString.fromString(ipfsHash).toFields()[0])
+    expect(requestEvent[3]).toEqual(requesterAccount.toFields()[0]);
   });
-
-  it('Encode/decode hash', async () =>{
-    const ipfsHashSegmented = segmentHash(ipfsHash)
-    const segmentedHashPart1 = ipfsHashSegmented.field1
-    const segmentedHashPart2 = ipfsHashSegmented.field2
-
-    const segmentedString = CircuitString.fromString(ipfsHash.slice(0,30));
-    const segmentedStringFields = segmentedString.toFields();
-
-    console.log(ipfsHash.slice(0,30));
-    console.log(StringCircuitValue.fromField(new StringCircuitValue(ipfsHash.slice(0,30)).toField()).toString());
-
-    // console.log("Original hash: ",ipfsHash)
-    // console.log("Segmented hash: ", segmentedString)
-    // console.log("Segmented ToField: ", segmentedStringFields)
-    // console.log("Segmented hash part 1: ", segmentedHashPart1)
-    // console.log("Segmented hash part 2: ", segmentedHashPart2)
-
-
-    // const decodedHashPart1 = CircuitString.fromFields().toString().replace(/\0/g, '')
-    // console.log(decodedHashPart1)
-    // const hash2 = CircuitString.fromCharacters(fieldHash2.toBits()).toString().replace(/\0/g, '')
-    // console.log("Field 1", CircuitString.fromCharacters(fieldHash1.toBits()).values[5].toString())
-    
-  })
 
   // it('Fullfill request', async () => {
     // await localDeploy();
@@ -208,15 +183,12 @@ describe('Zkon Token Tests', () => {
 
 
   function segmentHash(ipfsHashFile: string) {
-    // The StringCircuitValue only support 31 chars so we decided to segment in groups of 30 chars
     const ipfsHash0 = ipfsHashFile.slice(0,30) // first part of the ipfsHash
     const ipfsHash1 = ipfsHashFile.slice(30) // second part of the ipfsHash
-  
-    const ztring0 = CircuitString.fromString(ipfsHash0);
-    const field1 = ztring0.toFields()[0];
-  
-    const ztring1 = CircuitString.fromString(ipfsHash1);
-    const field2 = ztring1.toFields()[0];
+      
+    const field1 = new StringCircuitValue(ipfsHash0).toField();
+    
+    const field2 = new StringCircuitValue(ipfsHash1).toField();
   
     return {field1, field2}
   }
