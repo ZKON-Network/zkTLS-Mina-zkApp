@@ -37,11 +37,11 @@
     "typescript": "^4.7.2"
   },
   "peerDependencies": {
-    "o1js": "0.17.*"
+    "o1js": "^0.17.0"
   },
   "dependencies": {
     "mina-fungible-token": "^0.1.0-beta.3",
     "mina-signer": "^3.0.5",
-    "zkapp-cli": "^0.20.2"
+    "zkapp-cli": "^0.21.0"
   }
 }
