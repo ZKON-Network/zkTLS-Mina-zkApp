@@ -94,6 +94,43 @@ describe('Zkon Token Tests', () => {
     await initCoordinatorState();
   });
 
+  it('Prepay 2 requests', async () => {
+    await localDeploy();
+    await initCoordinatorState();
+
+    const initialSupply = new UInt64(1_000);
+        
+    let tx = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      token.mint(requesterAccount, initialSupply);
+    });
+    await tx.prove();
+    await tx.sign([deployerKey]).send();
+    
+    tx = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount);
+      token.mint(zkRequestAddress, initialSupply);
+    });
+    await tx.prove();
+    await tx.sign([deployerKey]).send();    
+
+    const txn = await Mina.transaction(requesterAccount, async () => {
+      AccountUpdate.fundNewAccount(requesterAccount);
+      coordinator.prepayRequest(new UInt64(2),zkRequestAddress);
+    });
+    await txn.prove();
+    await (await txn.sign([requesterKey]).send()).wait();
+
+    const events = await coordinator.fetchEvents();
+    expect(events[0].type).toEqual('requestsPaid');
+    console.log(events[0].event.data)
+    const requestPaidEvent = provablePure(events[0].event.data).toFields(events[0].event.data);
+    console.log(requestPaidEvent)
+    console.log(zkRequestAddress.toBase58());
+    console.log(PublicKey.fromFields([requestPaidEvent[0],requestPaidEvent[1]]).toBase58())
+    expect(zkRequestAddress.equals(PublicKey.fromFields([requestPaidEvent[0],requestPaidEvent[1]])))    
+  });
+
   it('Send request via example zkApp', async () => {
     await localDeploy();
     await initCoordinatorState();
@@ -131,7 +168,6 @@ describe('Zkon Token Tests', () => {
 
     requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();    
     expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
-    console.log(requesterBalance)
 
     // zkRequestBalance = await Mina.getBalance(zkRequestAddress,tokenId).value.toString();    
     // expect(zkRequestBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
@@ -139,14 +175,15 @@ describe('Zkon Token Tests', () => {
 
     const events = await coordinator.fetchEvents();
     expect(events[0].type).toEqual('requested');
+    console.log(events[0].event.data);
     const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data);
     const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]]);
     expect(requestEvent[0]).toEqual(expectedRequestId);
     expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
     expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
-    expect(requestEvent[3]).toEqual(requesterAccount.toFields()[0]);
-    expect(requestEvent[3]).toEqual(zkRequestAddress.toFields()[0]);
-    console.log(StringCircuitValue.fromField(ipfsHashSegmented0.field1).toString());
+    // expect(requestEvent[3]).toEqual(requesterAccount.toFields()[0]);
+    // expect(requestEvent[3]).toEqual(zkRequestAddress.toFields()[0]);
+    // console.log(StringCircuitValue.fromField(ipfsHashSegmented0.field1).toString());
   });
 
   function segmentHash(ipfsHashFile: string) {

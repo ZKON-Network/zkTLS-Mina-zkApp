@@ -1,4 +1,4 @@
-import { SmartContract, PublicKey, state, State, method, Field, Void } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field, Void, Sign, Signature } from 'o1js';
 import {ZkonRequestCoordinator} from './ZkonRequestCoordinator';
 
 export class ZkonRequest extends SmartContract {
@@ -19,9 +19,9 @@ export class ZkonRequest extends SmartContract {
   @method
   sendRequest(hashPart1: Field, hashPart2: Field): Field {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
-    const coordinator = new ZkonRequestCoordinator(coordinatorAddress);    
+    const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     
-    return coordinator.sendRequest(hashPart1, hashPart2);
+    return coordinator.sendRequest(this.self.publicKey, hashPart1, hashPart2);
   }
 
   /**
