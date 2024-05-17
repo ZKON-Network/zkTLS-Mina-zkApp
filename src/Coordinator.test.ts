@@ -104,7 +104,7 @@ describe('Zkon Token Tests', () => {
 
     const txn = await Mina.transaction(requesterAccount, () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      coordinator.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
+      coordinator.sendRequest(deployerAccount, ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
     });
     await txn.prove();
     await txn.sign([requesterKey, deployerKey]).send();
