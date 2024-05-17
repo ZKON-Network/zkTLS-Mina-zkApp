@@ -5,7 +5,7 @@
       "networkId": "testnet",
       "url": "http://localhost:8080/graphql",
       "keyPath": "keys/lightnet1.json",
-      "feepayerKeyPath": "/Users/glenci/.cache/zkapp-cli/keys/lightnet1.json",
+      "feepayerKeyPath": "keys/testnet.json",
       "feepayerAlias": "lightnet1",
       "fee": "0.01",
       "smartContract": "ZkonRequestCoordinator"
@@ -14,7 +14,7 @@
       "networkId": "testnet",
       "url": "https://api.minascan.io/node/devnet/v1/graphql",
       "keyPath": "keys/testnet.json",
-      "feepayerKeyPath": "/Users/glenci/.cache/zkapp-cli/keys/deployer.json",
+      "feepayerKeyPath": "keys/testnet.json",
       "feepayerAlias": "deployer",
       "fee": "0.1"
     }
