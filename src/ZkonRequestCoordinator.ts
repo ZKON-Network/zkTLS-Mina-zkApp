@@ -23,7 +23,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   @state(UInt64) requestCount = State<UInt64>();
 
   @method
-  initState(treasury: PublicKey, zkTokenAddress: PublicKey, feePrice: UInt64, oracle: PublicKey) {
+  async initState(treasury: PublicKey, zkTokenAddress: PublicKey, feePrice: UInt64, oracle: PublicKey) {
     super.init();
     this.feePrice.set(feePrice);
     this.treasury.set(treasury);
@@ -32,11 +32,13 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.requestCount.set(new UInt64(1));
   }
 
-  @method setFeePrice(feePrice: UInt64) {
+  @method 
+  async setFeePrice(feePrice: UInt64) {
     this.feePrice.set(feePrice);
   }
 
-  @method setTreasury(treasury: PublicKey) {
+  @method 
+  async setTreasury(treasury: PublicKey) {
     this.treasury.set(treasury);
   }
 
@@ -46,17 +48,17 @@ export class ZkonRequestCoordinator extends SmartContract {
     requestsPaid: RequestPaidEvent
   };
 
-  @method 
-  sendRequest(requester: PublicKey,hash1: Field, hash2: Field): Field {
+  @method.returns(Field)
+  async sendRequest(requester: PublicKey,hash1: Field, hash2: Field) {
     
-    const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
+    // const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
     
-    const amountToSend = this.feePrice.getAndRequireEquals();
+    // const amountToSend = this.feePrice.getAndRequireEquals();
 
-    ZkToken.transfer(this.sender, this.treasury.getAndRequireEquals(), amountToSend);
+    // ZkToken.transfer(this.self.body.publicKey, this.treasury.getAndRequireEquals(), amountToSend);
 
     const currentRequestCount = this.requestCount.getAndRequireEquals();    
-    const requestId = Poseidon.hash([currentRequestCount.toFields()[0],this.sender.toFields()[0]])
+    const requestId = Poseidon.hash([currentRequestCount.toFields()[0], requester.toFields()[0]])
 
     const sender = requester.toFields();
 
@@ -77,14 +79,14 @@ export class ZkonRequestCoordinator extends SmartContract {
   }  
 
   @method 
-  prepayRequest(requestAmount: UInt64, beneficiary: PublicKey) {
+  async prepayRequest(requestAmount: UInt64, beneficiary: PublicKey) {
     
     const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
     
     const feePrice = this.feePrice.getAndRequireEquals();
     const totalAmount = feePrice.mul(requestAmount);
 
-    ZkToken.transfer(this.sender, this.treasury.getAndRequireEquals(), totalAmount);
+    ZkToken.transfer(this.sender.getAndRequireSignature(), this.treasury.getAndRequireEquals(), totalAmount);
     
     //Get the current timestamp
     const timestamp = this.self.network.timestamp

@@ -1,4 +1,4 @@
-import { SmartContract, PublicKey, state, State, method, Field, Void, Sign, Signature } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field } from 'o1js';
 import {ZkonRequestCoordinator} from './ZkonRequestCoordinator';
 
 export class ZkonRequest extends SmartContract {
@@ -6,7 +6,7 @@ export class ZkonRequest extends SmartContract {
   @state(PublicKey) coinValue = State<Field>(); //Value of the coin returned by the oracle
 
   @method
-  initState(coordinator: PublicKey) {
+  async initState(coordinator: PublicKey) {
     super.init();
     this.coordinator.set(coordinator);
   }
@@ -16,12 +16,12 @@ export class ZkonRequest extends SmartContract {
    * @param req The initialized Zkon Request
    * @return requestId The request ID
    */
-  @method
-  sendRequest(hashPart1: Field, hashPart2: Field): Field {
+  @method.returns(Field)
+  async sendRequest(hashPart1: Field, hashPart2: Field) {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     
-    return coordinator.sendRequest(this.self.publicKey, hashPart1, hashPart2);
+    return await coordinator.sendRequest(this.self.publicKey, hashPart1, hashPart2);
   }
 
   /**

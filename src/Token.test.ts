@@ -33,9 +33,9 @@ describe('Zkon Token Tests', () => {
   });
 
   async function localDeploy() {
-    const txn = await Mina.transaction(deployerAccount, () => {
+    const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.deploy({
+      await token.deploy({
         owner: deployerAccount,
         supply: totalSupply,
         symbol: "ZKON",
@@ -52,7 +52,7 @@ describe('Zkon Token Tests', () => {
 
     let tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(deployerAccount, totalSupply);
+      await token.mint(deployerAccount, totalSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();
@@ -64,7 +64,7 @@ describe('Zkon Token Tests', () => {
     const trfAmount = new UInt64(1_000);
     let trfTx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.transfer(deployerAccount, receiverAccount, trfAmount);
+      await token.transfer(deployerAccount, receiverAccount, trfAmount);
     });
     await trfTx.prove();
     await trfTx.sign([deployerKey]).send();

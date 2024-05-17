@@ -64,16 +64,16 @@ describe('Zkon Token Tests', () => {
 
   async function localDeploy() {
     const totalSupply = UInt64.from(10_000_000);
-    const txn = await Mina.transaction(deployerAccount, () => {
+    const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount,3);
-      token.deploy({
+      await token.deploy({
         owner: deployerAccount,
         supply: totalSupply,
         symbol: "ZKON",
         src: ""
       });
-      coordinator.deploy();
-      zkRequest.deploy();
+      await coordinator.deploy();
+      await zkRequest.deploy();
     });
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
@@ -81,9 +81,9 @@ describe('Zkon Token Tests', () => {
   }
 
   async function initCoordinatorState(){
-    const txn = await Mina.transaction(deployerAccount, () => {
-      coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
-      zkRequest.initState(zkCoordinatorAddress);
+    const txn = await Mina.transaction(deployerAccount, async () => {
+      await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
+      await zkRequest.initState(zkCoordinatorAddress);
     });
     await txn.prove();
     await txn.sign([deployerKey]).send();
@@ -102,21 +102,21 @@ describe('Zkon Token Tests', () => {
         
     let tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(requesterAccount, initialSupply);
+      await token.mint(requesterAccount, initialSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();
     
     tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(zkRequestAddress, initialSupply);
+      await token.mint(zkRequestAddress, initialSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();    
 
     const txn = await Mina.transaction(requesterAccount, async () => {
       AccountUpdate.fundNewAccount(requesterAccount);
-      coordinator.prepayRequest(new UInt64(2),zkRequestAddress);
+      await coordinator.prepayRequest(new UInt64(2),zkRequestAddress);
     });
     await txn.prove();
     await (await txn.sign([requesterKey]).send()).wait();
@@ -139,14 +139,14 @@ describe('Zkon Token Tests', () => {
         
     let tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(requesterAccount, initialSupply);
+      await token.mint(requesterAccount, initialSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();
     
     tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(zkRequestAddress, initialSupply);
+      await token.mint(zkRequestAddress, initialSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();

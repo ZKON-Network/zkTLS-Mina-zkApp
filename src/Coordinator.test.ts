@@ -56,15 +56,15 @@ describe('Zkon Token Tests', () => {
 
   async function localDeploy() {
     const totalSupply = UInt64.from(10_000_000);
-    const txn = await Mina.transaction(deployerAccount, () => {
+    const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount,2);
-      token.deploy({
+      await token.deploy({
         owner: deployerAccount,
         supply: totalSupply,
         symbol: "ZKON",
         src: ""
       });
-      coordinator.deploy();
+      await coordinator.deploy();
     });
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
@@ -72,8 +72,8 @@ describe('Zkon Token Tests', () => {
   }
 
   async function initCoordinatorState(){
-    const txn = await Mina.transaction(deployerAccount, () => {
-      coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
+    const txn = await Mina.transaction(deployerAccount, async () => {
+      await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
     });
     await txn.prove();
     await txn.sign([deployerKey]).send();
@@ -92,7 +92,7 @@ describe('Zkon Token Tests', () => {
         
     let tx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      token.mint(requesterAccount, initialSupply);
+      await token.mint(requesterAccount, initialSupply);
     });
     await tx.prove();
     await tx.sign([deployerKey]).send();
@@ -102,9 +102,9 @@ describe('Zkon Token Tests', () => {
 
     const ipfsHashSegmented0 = segmentHash(ipfsHash)
 
-    const txn = await Mina.transaction(requesterAccount, () => {
+    const txn = await Mina.transaction(requesterAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      coordinator.sendRequest(deployerAccount, ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
+      await coordinator.sendRequest(deployerAccount, ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
     });
     await txn.prove();
     await txn.sign([requesterKey, deployerKey]).send();
