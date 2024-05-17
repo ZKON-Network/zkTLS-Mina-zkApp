@@ -1,7 +1,5 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Signature, Reducer, assert, Struct, UInt32, Circuit, Provable, Bool, Proof, CircuitString, Bytes, Hash, Mina, UInt8 } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
-
-const MAX_BLOCKS_TO_CHECK = UInt32.from(50);
 
 class RequestEvent extends Struct ({
   id: Field,

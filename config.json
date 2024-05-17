@@ -10,13 +10,14 @@
       "fee": "0.01",
       "smartContract": "ZkonRequestCoordinator"
     },
-    "testnet": {
+    "devnet": {
       "networkId": "testnet",
       "url": "https://api.minascan.io/node/devnet/v1/graphql",
-      "keyPath": "keys/testnet.json",
-      "feepayerKeyPath": "keys/testnet.json",
-      "feepayerAlias": "deployer",
-      "fee": "0.1"
+      "keyPath": "keys/devnet.json",
+      "feepayerKeyPath": "/Users/nytyr/.cache/zkapp-cli/keys/devnet.json",
+      "feepayerAlias": "devnet",
+      "fee": "0.1",
+      "smartContract": "ZkonRequestCoordinator"
     }
   }
 }
