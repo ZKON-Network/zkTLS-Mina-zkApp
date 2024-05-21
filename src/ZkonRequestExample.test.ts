@@ -1,8 +1,8 @@
 import { FungibleToken } from 'mina-fungible-token';
-import { ZkonRequestCoordinator } from './ZkonRequestCoordinator';
-import { ZkonRequest } from './ZkonRequest';
+import { ZkonRequestCoordinator } from './ZkonRequestCoordinator.js';
+import { ZkonRequest } from './ZkonRequest.js';
 import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, provablePure} from 'o1js';
-import { StringCircuitValue } from './String';
+import { StringCircuitValue } from './String.js';
 
 let proofsEnabled = false;
 

@@ -1,5 +1,5 @@
 import { SmartContract, PublicKey, state, State, method, Field } from 'o1js';
-import {ZkonRequestCoordinator} from './ZkonRequestCoordinator';
+import {ZkonRequestCoordinator} from './ZkonRequestCoordinator.js';
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();

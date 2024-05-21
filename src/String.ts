@@ -1,5 +1,5 @@
 import { Bool, Field, Poseidon, Struct } from 'o1js';
-import { UInt8 } from './UInt8';
+import { UInt8 } from './UInt8.js';
 
 const MAX_CHARS = 2 ** 5;
 

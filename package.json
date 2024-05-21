@@ -21,7 +21,8 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "lint": "npx eslint src/* --fix",
-    "keygen": "node scripts/keygen.js"
+    "keygen": "node scripts/keygen.js",
+    "postinstall": "node patch-o1js.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
