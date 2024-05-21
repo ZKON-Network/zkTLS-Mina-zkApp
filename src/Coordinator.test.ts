@@ -1,6 +1,6 @@
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator.js';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, provablePure} from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, provablePure, UInt8} from 'o1js';
 import { StringCircuitValue } from './String.js';
 
 let proofsEnabled = false;
@@ -27,13 +27,13 @@ describe('Zkon Token Tests', () => {
     if (proofsEnabled) await FungibleToken.compile();
   });
 
-  beforeEach(() => {
-    const Local = Mina.LocalBlockchain({ proofsEnabled });
+  beforeEach(async () => {
+    const Local = await Mina.LocalBlockchain({ proofsEnabled });
     Mina.setActiveInstance(Local);
-    ({ privateKey: deployerKey, publicKey: deployerAccount } =
-      Local.testAccounts[0]);
-    ({ privateKey: requesterKey, publicKey: requesterAccount } =
-      Local.testAccounts[1]);
+    deployerKey = Local.testAccounts[0].key;
+    deployerAccount = Local.testAccounts[0];
+    requesterAccount = Local.testAccounts[1];
+    requesterKey = Local.testAccounts[1].key;
     zktPrivateKey = PrivateKey.random();
     zktAddress = zktPrivateKey.toPublicKey();
     token = new FungibleToken(zktAddress);
@@ -55,14 +55,13 @@ describe('Zkon Token Tests', () => {
   });
 
   async function localDeploy() {
-    const totalSupply = UInt64.from(10_000_000);
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount,2);
       await token.deploy({
-        owner: deployerAccount,
-        supply: totalSupply,
+        admin: deployerAccount,
         symbol: "ZKON",
-        src: ""
+        src: "", 
+        decimals: UInt8.from(9),
       });
       await coordinator.deploy();
     });
