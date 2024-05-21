@@ -21,8 +21,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "lint": "npx eslint src/* --fix",
-    "keygen": "node scripts/keygen.js",
-    "postinstall": "node patch-o1js.js"
+    "keygen": "node scripts/keygen.js"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
@@ -43,6 +42,6 @@
   "dependencies": {
     "mina-fungible-token": "^0.1.0",
     "mina-signer": "^3.0.5",
-    "zkapp-cli": "^0.21.0"
+    "zkapp-cli": "^0.21.3"
   }
 }
