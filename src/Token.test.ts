@@ -22,10 +22,10 @@ describe('Zkon Token Tests', () => {
   beforeEach(async () => {
     const Local = await Mina.LocalBlockchain({ proofsEnabled });
     Mina.setActiveInstance(Local);
-    deployerKey = Local.testAccounts[0].key;
-    deployerAccount = Local.testAccounts[0];
-    receiverKey = Local.testAccounts[1].key;
-    receiverAccount = Local.testAccounts[1];
+    deployerKey = Local.testAccounts[0].privateKey;
+    deployerAccount = Local.testAccounts[0].publicKey;
+    receiverKey = Local.testAccounts[1].privateKey;
+    receiverAccount = Local.testAccounts[1].publicKey;
 
     zktPrivateKey = PrivateKey.random();
     zktAddress = zktPrivateKey.toPublicKey();
@@ -37,8 +37,8 @@ describe('Zkon Token Tests', () => {
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await token.deploy({
-        admin: deployerAccount,
-        decimals: UInt8.from(9),
+        owner: deployerAccount,
+        supply: new UInt64(10_000_000_000),
         symbol: "ZKON",
         src: ""
       });
