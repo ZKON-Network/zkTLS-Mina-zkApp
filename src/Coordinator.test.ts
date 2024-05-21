@@ -57,7 +57,10 @@ describe('Zkon Token Tests', () => {
   });
 
   async function localDeploy() {
-    const txn = await Mina.transaction(deployerAccount, async () => {
+    const txn = await Mina.transaction({
+      sender: deployerAccount,
+      fee: 1e8,
+    }, async () => {
       AccountUpdate.fundNewAccount(deployerAccount,2);
       await token.deploy({
         admin: deployerAccount,
@@ -72,7 +75,10 @@ describe('Zkon Token Tests', () => {
   }
 
   async function initCoordinatorState(){
-    const txn = await Mina.transaction(deployerAccount, async () => {
+    const txn = await Mina.transaction({
+      sender: deployerAccount,
+      fee: 1e8,
+    }, async () => {
       await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
     });
     txn.sign([deployerKey])
@@ -91,8 +97,11 @@ describe('Zkon Token Tests', () => {
 
     const initialSupply = new UInt64(1_000);
         
-    let tx = await Mina.transaction(deployerAccount, async () => {
-      AccountUpdate.fundNewAccount(deployerAccount);
+    let tx = await Mina.transaction({
+      sender: deployerAccount,
+      fee: 1e8,
+    }, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount, 1);
       await token.mint(requesterAccount, initialSupply);
     });
     tx.sign([deployerKey])
@@ -104,7 +113,10 @@ describe('Zkon Token Tests', () => {
 
     const ipfsHashSegmented0 = segmentHash(ipfsHash)
 
-    const txn = await Mina.transaction(requesterAccount, async () => {
+    const txn = await Mina.transaction({
+      sender: requesterAccount,
+      fee: 1e8,
+    }, async () => {
       // AccountUpdate.fundNewAccount(deployerAccount);
       await coordinator.sendRequest(deployerAccount, ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
     });
