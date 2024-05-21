@@ -31,46 +31,47 @@ describe('Zkon Token Tests', () => {
     if (proofsEnabled) await FungibleToken.compile();
   });
 
-  beforeEach(async () => {
-    const Local = await Mina.LocalBlockchain({ proofsEnabled });
-    Mina.setActiveInstance(Local);
+  beforeEach((done) => {
+   Mina.LocalBlockchain({ proofsEnabled }).then((Local) => {
+      
+      Mina.setActiveInstance(Local);
 
-    deployerKey = Local.testAccounts[0].privateKey;
-    deployerAccount = Local.testAccounts[0].publicKey;
-    requesterKey = Local.testAccounts[1].privateKey;
-    requesterAccount = Local.testAccounts[1].publicKey;
+      deployerKey = Local.testAccounts[0].key;
+      deployerAccount = Local.testAccounts[0];
+      requesterKey = Local.testAccounts[1].key;
+      requesterAccount = Local.testAccounts[1];
 
-    zktPrivateKey = PrivateKey.random();
-    zktAddress = zktPrivateKey.toPublicKey();
-    token = new FungibleToken(zktAddress);
-    tokenId = token.deriveTokenId();
+      zktPrivateKey = PrivateKey.random();
+      zktAddress = zktPrivateKey.toPublicKey();
+      token = new FungibleToken(zktAddress);
+      tokenId = token.deriveTokenId();
 
-    zkCoordinatorPrivateKey = PrivateKey.random();
-    zkCoordinatorAddress = zkCoordinatorPrivateKey.toPublicKey();
-    coordinator = new ZkonRequestCoordinator(zkCoordinatorAddress);
+      zkCoordinatorPrivateKey = PrivateKey.random();
+      zkCoordinatorAddress = zkCoordinatorPrivateKey.toPublicKey();
+      coordinator = new ZkonRequestCoordinator(zkCoordinatorAddress);
 
-    zkRequestKey = PrivateKey.random();
-    zkRequestAddress = zkRequestKey.toPublicKey();
-    zkRequest = new ZkonRequest(zkRequestAddress);
+      zkRequestKey = PrivateKey.random();
+      zkRequestAddress = zkRequestKey.toPublicKey();
+      zkRequest = new ZkonRequest(zkRequestAddress);
 
-    treasuryPrivateKey = PrivateKey.random();
-    treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
+      treasuryPrivateKey = PrivateKey.random();
+      treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
 
-    oracleAddress = PrivateKey.random().toPublicKey();
+      oracleAddress = PrivateKey.random().toPublicKey();
 
-    feePrice = new UInt64(100);
+      feePrice = new UInt64(100);
 
-    ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
-
+      ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
+      done();
+   });
   });
 
   async function localDeploy() {
-    const totalSupply = UInt64.from(10_000_000);
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount,3);
       await token.deploy({
-        owner: deployerAccount,
-        supply: UInt64.from(1000000),
+        admin: deployerAccount,
+        decimals: UInt8.from(9),
         symbol: "ZKON",
         src: ""
       });

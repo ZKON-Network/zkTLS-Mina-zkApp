@@ -27,55 +27,57 @@ describe('Zkon Token Tests', () => {
     if (proofsEnabled) await FungibleToken.compile();
   });
 
-  beforeEach(async () => {
-    const Local = await Mina.LocalBlockchain({ proofsEnabled });
-    Mina.setActiveInstance(Local);
-    deployerKey = Local.testAccounts[0].privateKey;
-    deployerAccount = Local.testAccounts[0].publicKey;
-    requesterAccount = Local.testAccounts[1].publicKey;
-    requesterKey = Local.testAccounts[1].privateKey;
-    zktPrivateKey = PrivateKey.random();
-    zktAddress = zktPrivateKey.toPublicKey();
-    token = new FungibleToken(zktAddress);
-    tokenId = token.deriveTokenId();
+  beforeEach((done) => {
+    Mina.LocalBlockchain({ proofsEnabled }).then((Local) => {
+      Mina.setActiveInstance(Local);
+      deployerKey = Local.testAccounts[0].key;
+      deployerAccount = Local.testAccounts[0];
+      requesterAccount = Local.testAccounts[1];
+      requesterKey = Local.testAccounts[1].key;
+      zktPrivateKey = PrivateKey.random();
+      zktAddress = zktPrivateKey.toPublicKey();
+      token = new FungibleToken(zktAddress);
+      tokenId = token.deriveTokenId();
+  
+      zkCoordinatorPrivateKey = PrivateKey.random();
+      zkCoordinatorAddress = zkCoordinatorPrivateKey.toPublicKey();
+      coordinator = new ZkonRequestCoordinator(zkCoordinatorAddress);
+  
+      treasuryPrivateKey = PrivateKey.random();
+      treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
+  
+      oracleAddress = PrivateKey.random().toPublicKey();
+  
+      feePrice = new UInt64(100);
+  
+      ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
+      done();
 
-    zkCoordinatorPrivateKey = PrivateKey.random();
-    zkCoordinatorAddress = zkCoordinatorPrivateKey.toPublicKey();
-    coordinator = new ZkonRequestCoordinator(zkCoordinatorAddress);
-
-    treasuryPrivateKey = PrivateKey.random();
-    treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
-
-    oracleAddress = PrivateKey.random().toPublicKey();
-
-    feePrice = new UInt64(100);
-
-    ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
-
+    });
   });
 
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount,2);
       await token.deploy({
-        owner: deployerAccount,
+        admin: deployerAccount,
         symbol: "ZKON",
         src: "", 
-        supply: new UInt64(1_000_000_000),
+        decimals: UInt8.from(9),
       });
       await coordinator.deploy();
     });
-    await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
-    await txn.sign([deployerKey, zktPrivateKey, zkCoordinatorPrivateKey]).send();
+    (await txn.sign([deployerKey, zktPrivateKey, zkCoordinatorPrivateKey]).prove()).send();
   }
 
   async function initCoordinatorState(){
     const txn = await Mina.transaction(deployerAccount, async () => {
       await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
     });
+    txn.sign([deployerKey])
     await txn.prove();
-    await txn.sign([deployerKey]).send();
+    await txn.send();
   }
 
   it('Deploy & init coordinator', async () => {
@@ -93,8 +95,9 @@ describe('Zkon Token Tests', () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await token.mint(requesterAccount, initialSupply);
     });
+    tx.sign([deployerKey])
     await tx.prove();
-    await tx.sign([deployerKey]).send();
+    await tx.send();
 
     let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
     expect(requesterBalance).toEqual(initialSupply.toString());
@@ -105,8 +108,9 @@ describe('Zkon Token Tests', () => {
       // AccountUpdate.fundNewAccount(deployerAccount);
       await coordinator.sendRequest(deployerAccount, ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
     });
+    txn.sign([requesterKey, deployerKey])
     await txn.prove();
-    await txn.sign([requesterKey, deployerKey]).send();
+    await txn.send();
     
     // requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();    
     // expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());

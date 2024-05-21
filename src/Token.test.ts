@@ -19,26 +19,28 @@ describe('Zkon Token Tests', () => {
 
   const totalSupply = UInt64.from(10_000_000);
 
-  beforeEach(async () => {
-    const Local = await Mina.LocalBlockchain({ proofsEnabled });
-    Mina.setActiveInstance(Local);
-    deployerKey = Local.testAccounts[0].privateKey;
-    deployerAccount = Local.testAccounts[0].publicKey;
-    receiverKey = Local.testAccounts[1].privateKey;
-    receiverAccount = Local.testAccounts[1].publicKey;
-
-    zktPrivateKey = PrivateKey.random();
-    zktAddress = zktPrivateKey.toPublicKey();
-    token = new FungibleToken(zktAddress);
-    tokenId = token.deriveTokenId();
+  beforeEach((done) => {
+    Mina.LocalBlockchain({ proofsEnabled }).then((Local) => {
+      Mina.setActiveInstance(Local);
+      deployerKey = Local.testAccounts[0].key;
+      deployerAccount = Local.testAccounts[0];
+      receiverKey = Local.testAccounts[1].key;
+      receiverAccount = Local.testAccounts[1];
+  
+      zktPrivateKey = PrivateKey.random();
+      zktAddress = zktPrivateKey.toPublicKey();
+      token = new FungibleToken(zktAddress);
+      tokenId = token.deriveTokenId();
+      done();
+    });
   });
 
   async function localDeploy() {
     const txn = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await token.deploy({
-        owner: deployerAccount,
-        supply: new UInt64(10_000_000_000),
+        admin: deployerAccount,
+        decimals: UInt8.from(9),
         symbol: "ZKON",
         src: ""
       });
