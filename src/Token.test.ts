@@ -3,62 +3,66 @@ import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, UInt8 } from
 
 let proofsEnabled = false;
 
+const Local = await Mina.LocalBlockchain({ 
+  proofsEnabled
+});
+Mina.setActiveInstance(Local);
+
 describe('Zkon Token Tests', () => {
-  let deployerAccount: PublicKey,
-    deployerKey: PrivateKey,
-    receiverAccount: PublicKey,
-    receiverKey: PrivateKey,
+  let deployerAccount: Mina.TestPublicKey,
+    receiverAccount: Mina.TestPublicKey,
+    adminAccount: Mina.TestPublicKey,
     zktAddress: PublicKey,
     zktPrivateKey: PrivateKey,
     token: FungibleToken,
     tokenId: Field;
 
   beforeAll(async () => {
+    console.log('Before all');
+
     if (proofsEnabled) await FungibleToken.compile();
-  });
 
-  const totalSupply = UInt64.from(10_000_000);
+    deployerAccount = Local.testAccounts[0];
+    receiverAccount = Local.testAccounts[1];
+    adminAccount = Local.testAccounts[2];
 
-  beforeEach((done) => {
-    Mina.LocalBlockchain({ proofsEnabled }).then((Local) => {
-      Mina.setActiveInstance(Local);
-      deployerKey = Local.testAccounts[0].key;
-      deployerAccount = Local.testAccounts[0];
-      receiverKey = Local.testAccounts[1].key;
-      receiverAccount = Local.testAccounts[1];
-  
-      zktPrivateKey = PrivateKey.random();
-      zktAddress = zktPrivateKey.toPublicKey();
-      token = new FungibleToken(zktAddress);
-      tokenId = token.deriveTokenId();
-      done();
-    });
-  });
+    zktPrivateKey = PrivateKey.random();
+    zktAddress = zktPrivateKey.toPublicKey();
+    token = new FungibleToken(zktAddress);
+    tokenId = token.deriveTokenId();
 
-  async function localDeploy() {
-    const txn = await Mina.transaction(deployerAccount, async () => {
+
+    const txn = await Mina.transaction({
+      sender: deployerAccount,
+      fee: 1e8,
+    }, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await token.deploy({
-        admin: deployerAccount,
+        admin: adminAccount,
         decimals: UInt8.from(9),
         symbol: "ZKON",
         src: ""
       });
     });
     await txn.prove();
-    // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
-    await txn.sign([deployerKey, zktPrivateKey]).send();
-  }
+    await txn.sign([deployerAccount.key, adminAccount.key, zktPrivateKey]).send();
+    console.log('sent');
+  });
+
+  const totalSupply = UInt64.from(10_000_000);
 
   it('Deploy and mint ZkonToken', async () => {
-    await localDeploy();
 
-    let tx = await Mina.transaction(deployerAccount, async () => {
-      AccountUpdate.fundNewAccount(deployerAccount);
-      await token.mint(deployerAccount, totalSupply);
+    let tx = await Mina.transaction({
+      sender: receiverAccount,
+      fee: 1e8,
+    }, async () => {
+      AccountUpdate.fundNewAccount(receiverAccount, 1);
+      await token.mint(receiverAccount, totalSupply);
     });
+
     await tx.prove();
-    await tx.sign([deployerKey]).send();
+    await tx.sign([receiverAccount.key, adminAccount.key]).send();
 
     let ownerBalance = Mina.getBalance(deployerAccount,tokenId).value.toString();
     
@@ -69,8 +73,9 @@ describe('Zkon Token Tests', () => {
       AccountUpdate.fundNewAccount(deployerAccount);
       await token.transfer(deployerAccount, receiverAccount, trfAmount);
     });
+    trfTx.sign([deployerAccount.key]);
     await trfTx.prove();
-    await trfTx.sign([deployerKey]).send();
+    await trfTx.send();
 
     ownerBalance = Mina.getBalance(deployerAccount,tokenId).value.toString();
     const receiverBalance = Mina.getBalance(receiverAccount,tokenId).value.toString();
