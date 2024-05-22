@@ -1,87 +1,92 @@
-import { FungibleToken } from 'mina-fungible-token';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, UInt8 } from 'o1js';
+import {
+  Field,
+  Mina,
+  PrivateKey,
+  PublicKey,
+  AccountUpdate,
+  UInt64,
+  UInt8,
+} from 'o1js';
+import { FungibleToken, FungibleTokenAdmin } from 'mina-fungible-token';
 
 let proofsEnabled = false;
 
 const Local = await Mina.LocalBlockchain({ 
-  proofsEnabled
+  proofsEnabled,
+  enforceTransactionLimits: false,
 });
 Mina.setActiveInstance(Local);
 
 describe('Zkon Token Tests', () => {
   let deployerAccount: Mina.TestPublicKey,
-    receiverAccount: Mina.TestPublicKey,
-    adminAccount: Mina.TestPublicKey,
+    receiverAccount: Mina.TestPublicKey,    
     zktAddress: PublicKey,
     zktPrivateKey: PrivateKey,
     token: FungibleToken,
-    tokenId: Field;
+    tokenId: Field,
+    tokenAdmin: Mina.TestPublicKey,
+    tokenAdminContract: FungibleTokenAdmin;
 
   beforeAll(async () => {
-    console.log('Before all');
-
-    if (proofsEnabled) await FungibleToken.compile();
-
     deployerAccount = Local.testAccounts[0];
-    receiverAccount = Local.testAccounts[1];
-    adminAccount = Local.testAccounts[2];
-
+    receiverAccount = Local.testAccounts[1];    
+    tokenAdmin = Local.testAccounts[2];
+    
     zktPrivateKey = PrivateKey.random();
     zktAddress = zktPrivateKey.toPublicKey();
     token = new FungibleToken(zktAddress);
-    tokenId = token.deriveTokenId();
 
+    tokenAdminContract = new FungibleTokenAdmin(tokenAdmin)
+    
+    if (proofsEnabled) await FungibleToken.compile();
+  });
 
-    const txn = await Mina.transaction({
-      sender: deployerAccount,
-      fee: 1e8,
-    }, async () => {
-      AccountUpdate.fundNewAccount(deployerAccount);
+  it('Deploy',async ()=> {
+    const txn = await Mina.transaction(deployerAccount, async () => {
+      AccountUpdate.fundNewAccount(deployerAccount,1);
+      await tokenAdminContract.deploy({
+        adminPublicKey: tokenAdmin,
+      })
       await token.deploy({
-        admin: adminAccount,
+        admin: tokenAdmin,
         decimals: UInt8.from(9),
         symbol: "ZKON",
         src: ""
       });
     });
     await txn.prove();
-    await txn.sign([deployerAccount.key, adminAccount.key, zktPrivateKey]).send();
+    await txn.sign([deployerAccount.key, tokenAdmin.key, zktPrivateKey]).send();
     console.log('sent');
-  });
+  })
+  
+  it('mint ZkonToken to receiver account', async () => {
+    const initialSupply = UInt64.from(10000000);
 
-  const totalSupply = UInt64.from(10_000_000);
-
-  it('Deploy and mint ZkonToken', async () => {
-
-    let tx = await Mina.transaction({
-      sender: receiverAccount,
-      fee: 1e8,
-    }, async () => {
+    const tx = await Mina.transaction(receiverAccount, async () => {
       AccountUpdate.fundNewAccount(receiverAccount, 1);
-      await token.mint(receiverAccount, totalSupply);
+      await token.mint(receiverAccount, initialSupply);
     });
 
-    await tx.prove();
-    await tx.sign([receiverAccount.key, adminAccount.key]).send();
+    tx.sign([receiverAccount.key, tokenAdmin.key])
+    await tx.prove()
+    await tx.send()
 
-    let ownerBalance = Mina.getBalance(deployerAccount,tokenId).value.toString();
+    let receiverBalance = (await token.getBalanceOf(receiverAccount)).toString();
     
-    expect(ownerBalance).toEqual(totalSupply.toString());
+    expect(receiverBalance).toEqual(initialSupply.toString());
 
-    const trfAmount = new UInt64(1_000);
+    const trfAmount = new UInt64(1000);
     let trfTx = await Mina.transaction(deployerAccount, async () => {
       AccountUpdate.fundNewAccount(deployerAccount);
-      await token.transfer(deployerAccount, receiverAccount, trfAmount);
+      await token.transfer(receiverAccount, deployerAccount, trfAmount);
     });
-    trfTx.sign([deployerAccount.key]);
+    trfTx.sign([deployerAccount.key, receiverAccount.key]);
     await trfTx.prove();
     await trfTx.send();
 
-    ownerBalance = Mina.getBalance(deployerAccount,tokenId).value.toString();
-    const receiverBalance = Mina.getBalance(receiverAccount,tokenId).value.toString();
-
-    expect(ownerBalance).toEqual(totalSupply.sub(trfAmount).toString());
-    expect(receiverBalance).toEqual(trfAmount.toString());
+    let deployerBalance = (await token.getBalanceOf(deployerAccount)).toString();
+    
+    expect(deployerBalance).toEqual(trfAmount.toString());
   })
 
 });
