@@ -50,13 +50,7 @@ export class ZkonRequestCoordinator extends SmartContract {
 
   @method.returns(Field)
   async sendRequest(requester: PublicKey,hash1: Field, hash2: Field) {
-    
-    // const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());    
-    
-    // const amountToSend = this.feePrice.getAndRequireEquals();
-
-    // ZkToken.transfer(this.self.body.publicKey, this.treasury.getAndRequireEquals(), amountToSend);
-
+   
     const currentRequestCount = this.requestCount.getAndRequireEquals();    
     const requestId = Poseidon.hash([currentRequestCount.toFields()[0], requester.toFields()[0]])
 
@@ -86,7 +80,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     const feePrice = this.feePrice.getAndRequireEquals();
     const totalAmount = feePrice.mul(requestAmount);
 
-    ZkToken.transfer(this.sender.getAndRequireSignature(), this.treasury.getAndRequireEquals(), totalAmount);
+    await ZkToken.transfer(this.sender.getAndRequireSignature(), this.treasury.getAndRequireEquals(), totalAmount);
     
     //Get the current timestamp
     const timestamp = this.self.network.timestamp

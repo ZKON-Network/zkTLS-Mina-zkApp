@@ -21,7 +21,7 @@ export class ZkonRequest extends SmartContract {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     
-    return coordinator.sendRequest(this.self.publicKey, hashPart1, hashPart2);
+    return coordinator.sendRequest(this.address, hashPart1, hashPart2);
   }
 
   /**
