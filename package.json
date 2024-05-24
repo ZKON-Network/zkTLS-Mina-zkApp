@@ -21,12 +21,14 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --transformIgnorePatterns \"node_modules/(?!your-module-name)/\"",
     "testw": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
     "lint": "npx eslint src/* --fix",
-    "keygen": "node scripts/keygen.js"
+    "keygen": "node scripts/keygen.js",
+    "postinstall": "node build-mina-fungible-token.js && cd node_modules/mina-fungible-token && npm run build"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.16.4",
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.3",
+    "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
     "eslint": "^8.7.0",
