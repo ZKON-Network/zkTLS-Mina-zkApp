@@ -42,6 +42,7 @@
     "o1js": "^1.2.0"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "mina-fungible-token": "git+https://github.com/MinaFoundation/mina-fungible-token.git#971bf58962d47870d5bcf5a220dc3a80ca5321a0",
     "mina-signer": "^3.0.5",
     "zkapp-cli": "^0.21.3"
