@@ -29,9 +29,9 @@ export class ZkonRequest extends SmartContract {
    */
   @method
   async setCoinValue(value: Field) {
-    const coordinatorAddress = this.coordinator.getAndRequireEquals();
-    const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
-    // assert(this.sender === coordinatorAddress) //Validates who is sending
-    this.coinValue.set(value)
+    // const coordinatorAddress = this.coordinator.getAndRequireEquals();
+    // const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
+    // // assert(this.sender === coordinatorAddress) //Validates who is sending
+    // this.coinValue.set(value)
   }
 }
