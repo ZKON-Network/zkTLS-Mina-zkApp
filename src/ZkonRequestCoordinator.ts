@@ -64,7 +64,6 @@ export class ZkonRequestCoordinator extends SmartContract {
       senderY: sender[1]
     });
 
-
     this.emitEvent('requested', event);
     
     this.requestCount.set(currentRequestCount.add(1));

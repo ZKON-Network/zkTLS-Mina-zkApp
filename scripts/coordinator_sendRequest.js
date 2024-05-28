@@ -5,9 +5,9 @@ import {
     PrivateKey,
     fetchAccount,
     PublicKey,
-    AccountUpdate,
+    UInt64,    
   } from 'o1js';
-import { ZkonRequest } from '../build/src/ZkonRequest.js';
+import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
 import { StringCircuitValue } from '../build/src/String.js';
     
   const transactionFee = 100_000_000;
@@ -17,8 +17,12 @@ import { StringCircuitValue } from '../build/src/String.js';
     mina: 'https://api.minascan.io/node/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
+  
+  const ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
 
-  //Fee payer setup
+  const ipfsHashSegmented0 = segmentHash(ipfsHash);
+  
+  //const Fee payer setup
   const senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
   const sender = PublicKey.fromBase58(process.env.DEPLOYER_ACCOUNT);
 
@@ -26,46 +30,42 @@ import { StringCircuitValue } from '../build/src/String.js';
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
   console.log(
     `Using the fee payer account ${sender.toBase58()} with nonce: ${
-      accountDetails?.nonce      
+      accountDetails?.nonce
     } and balance: ${accountDetails?.balance}.`
   );
-  
-  const zkRequestAddress = process.env.ZQREQUEST_ADDRESS ?
-  PublicKey.fromBase58(process.env.ZQREQUEST_ADDRESS) : 
-  PublicKey.fromBase58('B62qpKt9QUBMEmq4Z95u2ymhsiQJkLLWBctw6NoTiSP9AzJZkR7Fxht');
-
-  await ZkonRequest.compile();
-    
-  const zkRequest = new ZkonRequest(zkRequestAddress);
   console.log('');
-
-  const ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
-
-  const ipfsHashSegmented0 = segmentHash(ipfsHash);
-
-  console.log(`Sending request via zkRequest.`);  
+  
+  // Coordinator compilation  
+  await ZkonRequestCoordinator.compile();
+  
+  const zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
+  const coordinator = new ZkonRequestCoordinator(zkCoordinatorAddress);
+  console.log('');
+  
+  // zkApps deployment
+  console.log(`Send request via ZkonRequestCoordinator.`);
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {
-      const request = await zkRequest.sendRequest(
+      await coordinator.sendRequest(
+        sender,
         ipfsHashSegmented0.field1,
         ipfsHashSegmented0.field2
       );
     }
   );
+  console.log('Signing');
+  transaction.sign([senderKey]);
   console.log('Generating proof');
   await transaction.prove()
   console.log('Proof generated');
-  
-  console.log('Signing');
-  transaction.sign([senderKey]);
   console.log('');
-  console.log('Sending the request via zkRequest.');
+  console.log('Sending the transaction.');
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
-    console.log(`Success! Request transaction sent.  
+    console.log(`Success! Request Sent.  
   Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
+  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);  
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
