@@ -5,7 +5,8 @@ import {
     PrivateKey,
     fetchAccount,
     PublicKey,
-    UInt64,    
+    UInt64,
+    provablePure,    
   } from 'o1js';
 import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
 import { StringCircuitValue } from '../build/src/String.js';
@@ -15,6 +16,7 @@ import { StringCircuitValue } from '../build/src/String.js';
   // Network configuration
   const network = Mina.Network({
     mina: 'https://api.minascan.io/node/devnet/v1/graphql',
+    archive: 'https://api.minascan.io/archive/devnet/v1/graphql',    
   });
   Mina.setActiveInstance(network);
   
@@ -70,6 +72,14 @@ import { StringCircuitValue } from '../build/src/String.js';
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
   console.log('');
+
+  const events = await coordinator.fetchEvents();
+  console.log(events);
+  console.log(events[1].type);
+  console.log(events[1].event.data);
+  const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data);
+  console.log('Sender from hash:', PublicKey.fromFields([requestEvent[3], requestEvent[4]]));
+  console.log(sender);
 
   function segmentHash(ipfsHashFile) {
     const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
