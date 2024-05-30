@@ -5,22 +5,58 @@ import {
     PrivateKey,
     fetchAccount,
     PublicKey,
-    AccountUpdate,
+    Lightnet
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import { StringCircuitValue } from '../build/src/String.js';
+import fs from 'fs-extra';
     
-  const transactionFee = 100_000_000;
-  
   // Network configuration
+  const transactionFee = 100_000_000;
+  const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
-    mina: 'https://api.minascan.io/node/devnet/v1/graphql',
+    mina: useCustomLocalNetwork
+      ? 'http://localhost:8080/graphql'
+      : 'https://api.minascan.io/node/devnet/v1/graphql',
+    lightnetAccountManager: 'http://localhost:8181',
+    // archive: useCustomLocalNetwork
+    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
 
-  //Fee payer setup
-  const senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
-  const sender = PublicKey.fromBase58(process.env.DEPLOYER_ACCOUNT);
+  let senderKey,
+      sender,
+      localData,
+      zkRequestAddress
+
+  // Fee payer setup
+  if (useCustomLocalNetwork){
+    localData = fs.readJsonSync('./data/addresses.json');
+    let deployerKey;
+    if (!!localData){
+      if (!!localData.deployerKey){
+        deployerKey = PrivateKey.fromBase58(localData.deployerKey)
+      }else{
+        deployerKey = (await Lightnet.acquireKeyPair()).privateKey
+      }
+    }
+    senderKey = deployerKey;
+    sender = senderKey.toPublicKey();
+
+    zkRequestAddress = localData.zkRequestAddress ? PublicKey.fromBase58(localData.zkRequestAddress) : (await Lightnet.acquireKeyPair()).publicKey;
+    try {
+      await fetchAccount({ publicKey: sender })
+    } catch (error) {
+      senderKey = (await Lightnet.acquireKeyPair()).privateKey
+      sender = senderKey.toPublicKey();
+    }
+  }else{
+    senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    sender = senderKey.toPublicKey();
+    zkRequestAddress = process.env.ZQREQUEST_ADDRESS ?
+    PublicKey.fromBase58(process.env.ZQREQUEST_ADDRESS) : 
+    PublicKey.fromBase58('B62qpKt9QUBMEmq4Z95u2ymhsiQJkLLWBctw6NoTiSP9AzJZkR7Fxht');
+  }
 
   console.log(`Fetching the fee payer account information.`);
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
@@ -30,10 +66,6 @@ import { StringCircuitValue } from '../build/src/String.js';
     } and balance: ${accountDetails?.balance}.`
   );
   
-  const zkRequestAddress = process.env.ZQREQUEST_ADDRESS ?
-  PublicKey.fromBase58(process.env.ZQREQUEST_ADDRESS) : 
-  PublicKey.fromBase58('B62qpKt9QUBMEmq4Z95u2ymhsiQJkLLWBctw6NoTiSP9AzJZkR7Fxht');
-
   await ZkonRequest.compile();
     
   const zkRequest = new ZkonRequest(zkRequestAddress);

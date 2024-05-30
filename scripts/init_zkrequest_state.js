@@ -5,41 +5,68 @@ import {
     PrivateKey,
     fetchAccount,
     PublicKey,
-    AccountUpdate,
+    Lightnet,
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
+import fs from 'fs-extra';
     
-  const transactionFee = 100_000_000;
-  
   // Network configuration
+  const transactionFee = 100_000_000;
+  const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
-    mina: 'https://api.minascan.io/node/devnet/v1/graphql',
+    mina: useCustomLocalNetwork
+      ? 'http://localhost:8080/graphql'
+      : 'https://api.minascan.io/node/devnet/v1/graphql',
+    lightnetAccountManager: 'http://localhost:8181',
+    // archive: useCustomLocalNetwork
+    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
 
-  //Fee payer setup
-  const senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
-  const sender = PublicKey.fromBase58(process.env.DEPLOYER_ACCOUNT);
-  
-  if (process.env.NEED_FUNDING === true) {
-    console.log(`Funding the fee payer account.`);
-    await Mina.faucet(sender);
+  let senderKey,
+      sender,
+      localData,
+      zkRequestAddress,
+      zkCoordinatorAddress
+
+  // Fee payer setup
+  if (useCustomLocalNetwork){
+    localData = fs.readJsonSync('./data/addresses.json');
+    let deployerKey;
+    if (!!localData){
+      deployerKey = localData.deployerKey ? localData.deployerKey : (await Lightnet.acquireKeyPair()).privateKey
+    }
+    senderKey = PrivateKey.fromBase58(deployerKey);
+    sender = senderKey.toPublicKey();
+
+    zkRequestAddress = localData.zkRequestAddress ? PublicKey.fromBase58(localData.zkRequestAddress) : (await Lightnet.acquireKeyPair()).publicKey;
+    zkCoordinatorAddress = localData.coordinatorAddress ? PublicKey.fromBase58(localData.coordinatorAddress) : (await Lightnet.acquireKeyPair()).publicKey;
+    try {
+      await fetchAccount({ publicKey: sender })
+    } catch (error) {
+      senderKey = (await Lightnet.acquireKeyPair()).privateKey
+      sender = senderKey.toPublicKey();
+    }
+  }else{
+    senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    sender = senderKey.toPublicKey();
+    
+    zkRequestAddress = process.env.ZQREQUEST_ADDRESS ?
+      PublicKey.fromBase58(process.env.ZQREQUEST_ADDRESS) : 
+      PublicKey.fromBase58('B62qpKt9QUBMEmq4Z95u2ymhsiQJkLLWBctw6NoTiSP9AzJZkR7Fxht');
+
+    zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
   }
+  
   console.log(`Fetching the fee payer account information.`);
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
   console.log(
     `Using the fee payer account ${sender.toBase58()} with nonce: ${
       accountDetails?.nonce      
     } and balance: ${accountDetails?.balance}.`
-  );
+  );  
   
-  const zkRequestAddress = process.env.ZQREQUEST_ADDRESS ?
-    PublicKey.fromBase58(process.env.ZQREQUEST_ADDRESS) : 
-    PublicKey.fromBase58('B62qpKt9QUBMEmq4Z95u2ymhsiQJkLLWBctw6NoTiSP9AzJZkR7Fxht');
-  
-  await ZkonRequest.compile();
-
-  const zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
+  await ZkonRequest.compile(); 
   
   const zkRequest = new ZkonRequest(zkRequestAddress);
   console.log('');
@@ -61,8 +88,7 @@ import { ZkonRequest } from '../build/src/ZkonRequest.js';
   console.log('Sending the transaction for deploying zkRequest.');
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy transaction sent.
-  Your smart contract will be deployed
+    console.log(`Success! zkRequest state initiated
   as soon as the transaction is included in a block.
   Txn hash: ${pendingTx.hash}
   Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);

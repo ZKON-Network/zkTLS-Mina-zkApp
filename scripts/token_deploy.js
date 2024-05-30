@@ -5,28 +5,50 @@ import {
     Mina,
     PrivateKey,
     fetchAccount,
-    PublicKey,
+    Lightnet,
     UInt8,
   } from 'o1js';
   import { FungibleToken, FungibleTokenAdmin } from 'mina-fungible-token';
-  
-  const zkAppKey = PrivateKey.random();
-  const zkAppAddress = zkAppKey.toPublicKey();
-  const transactionFee = 100_000_000;
+  import fs from 'fs-extra';
   
   // Network configuration
+  const transactionFee = 100_000_000;
+  const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
-    mina: 'https://api.minascan.io/node/devnet/v1/graphql',    
+    mina: useCustomLocalNetwork
+      ? 'http://localhost:8080/graphql'
+      : 'https://api.minascan.io/node/devnet/v1/graphql',
+    lightnetAccountManager: 'http://localhost:8181',
+    // archive: useCustomLocalNetwork
+    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
-  
+
+  let senderKey;
+  let sender;
+  let localData;
+
   // Fee payer setup
-  const senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
-  const sender = PublicKey.fromBase58(process.env.DEPLOYER_ACCOUNT);
-  if (process.env.NEED_FUNDING === true) {
-    console.log(`Funding the fee payer account.`);
-    await Mina.faucet(sender);
+  if (useCustomLocalNetwork){
+    localData = fs.readJsonSync('./data/addresses.json');
+    let deployerKey;
+    if (!!localData){
+      if (!!localData.deployerKey){
+        deployerKey = PrivateKey.fromBase58(localData.deployerKey)
+      }else{
+        deployerKey = (await Lightnet.acquireKeyPair()).privateKey
+      }
+    }
+    senderKey = deployerKey;
+    sender = senderKey.toPublicKey();
+    try {
+      await fetchAccount({ publicKey: sender })
+    } catch (error) {
+      senderKey = (await Lightnet.acquireKeyPair()).privateKey
+      sender = senderKey.toPublicKey();
+    }
   }
+  
   console.log(`Fetching the fee payer account information.`);
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
   console.log(
@@ -35,6 +57,9 @@ import {
     } and balance: ${accountDetails?.balance}.`
   );
   console.log('');
+
+  const zkAppKey = PrivateKey.random();
+  const zkAppAddress = zkAppKey.toPublicKey();
   
   // token admin compilation
   console.log('Compiling the token admin smart contract.');
@@ -77,4 +102,14 @@ import {
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
+  if (useCustomLocalNetwork){
+    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
+    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
+    localData.tokenAddress = zkAppAddress;    
+    fs.outputJsonSync(
+      "./data/addresses.json",            
+        localData,      
+      { spaces: 2 }
+    );
+  }
   console.log('');

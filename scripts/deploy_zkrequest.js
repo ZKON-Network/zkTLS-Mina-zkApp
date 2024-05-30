@@ -4,24 +4,52 @@ import {
     Mina,
     PrivateKey,
     fetchAccount,
-    PublicKey,
     AccountUpdate,
+    Lightnet,
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
+import fs from 'fs-extra';
     
-  const transactionFee = 100_000_000;
-  
   // Network configuration
+  const transactionFee = 100_000_000;
+  const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
-    mina: 'https://api.minascan.io/node/devnet/v1/graphql',
+    mina: useCustomLocalNetwork
+      ? 'http://localhost:8080/graphql'
+      : 'https://api.minascan.io/node/devnet/v1/graphql',
+    lightnetAccountManager: 'http://localhost:8181',
+    // archive: useCustomLocalNetwork
+    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
 
-  const ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
-  
-  //const Fee payer setup
-  const senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
-  const sender = PublicKey.fromBase58(process.env.DEPLOYER_ACCOUNT);
+  let senderKey;
+  let sender;
+  let localData;
+
+  // Fee payer setup
+  if (useCustomLocalNetwork){
+    localData = fs.readJsonSync('./data/addresses.json');
+    let deployerKey;
+    if (!!localData){
+      if (!!localData.deployerKey){
+        deployerKey = PrivateKey.fromBase58(localData.deployerKey)
+      }else{
+        deployerKey = (await Lightnet.acquireKeyPair()).privateKey
+      }
+    }
+    senderKey = deployerKey;
+    sender = senderKey.toPublicKey();
+    try {
+      await fetchAccount({ publicKey: sender })
+    } catch (error) {
+      senderKey = (await Lightnet.acquireKeyPair()).privateKey
+      sender = senderKey.toPublicKey();
+    }
+  }else{
+    senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    sender = senderKey.toPublicKey();
+  }
   
   console.log(`Fetching the fee payer account information.`);
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
@@ -31,7 +59,7 @@ import { ZkonRequest } from '../build/src/ZkonRequest.js';
     } and balance: ${accountDetails?.balance}.`
   );
   
-  // Coordinator  
+  // ZkRequest App  
   const zkRequestKey = PrivateKey.random();
   const zkRequestAddress = zkRequestKey.toPublicKey();
   
@@ -67,4 +95,15 @@ import { ZkonRequest } from '../build/src/ZkonRequest.js';
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
+  if (useCustomLocalNetwork){
+    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
+    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
+    localData.zkRequest = zkRequestKey.toBase58();
+    localData.zkRequestAddress = zkRequestAddress;
+    fs.outputJsonSync(
+      "./data/addresses.json",            
+        localData,      
+      { spaces: 2 }
+    );
+  }
   console.log('');

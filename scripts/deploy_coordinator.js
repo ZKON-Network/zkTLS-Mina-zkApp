@@ -4,37 +4,53 @@ import {
     Mina,
     PrivateKey,
     fetchAccount,
-    UInt64,
     Lightnet,
     AccountUpdate
   } from 'o1js';
 import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
+import fs from 'fs-extra';
     
+  // // Network configuration
   const transactionFee = 100_000_000;
-
-  const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';
-  
-  // Network configuration
+  const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
     mina: useCustomLocalNetwork
       ? 'http://localhost:8080/graphql'
       : 'https://api.minascan.io/node/devnet/v1/graphql',
     lightnetAccountManager: 'http://localhost:8181',
+    // archive: useCustomLocalNetwork
+    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
+  
+  let senderKey;
+  let sender;
+  let localData;
 
   // Fee payer setup
-  const senderKey = useCustomLocalNetwork
-  ? (await Lightnet.acquireKeyPair()).privateKey
-  : PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
-  const sender = senderKey.toPublicKey();
-  
-  if (process.env.USE_CUSTOM_LOCAL_NETWORK === 'false' && 
-      process.env.NEED_FUNDING === 'true') {
-    console.log(`Funding the fee payer account.`);
-    await Mina.faucet(sender,network);
+  if (useCustomLocalNetwork){
+    localData = fs.readJsonSync('./data/addresses.json');
+    let deployerKey;
+    if (!!localData){
+      if (!!localData.deployerKey){
+        deployerKey = PrivateKey.fromBase58(localData.deployerKey)
+      }else{
+        deployerKey = (await Lightnet.acquireKeyPair()).privateKey
+      }
+    }
+    senderKey = deployerKey;
+    sender = senderKey.toPublicKey();
+    try {
+      await fetchAccount({ publicKey: sender })
+    } catch (error) {
+      senderKey = (await Lightnet.acquireKeyPair()).privateKey
+      sender = senderKey.toPublicKey();
+    }
+  }else{
+    senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    sender = senderKey.toPublicKey();
   }
-  
+
   console.log(`Fetching the fee payer account information.`);
   let accountDetails = (await fetchAccount({ publicKey: sender })).account;
   console.log(
@@ -44,7 +60,7 @@ import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
   );
   console.log('');
   
-  // Coordinator compilation  
+  // // Coordinator compilation  
   await ZkonRequestCoordinator.compile();
   const coordinatorKey = PrivateKey.random();
   const coordinatorAddress = coordinatorKey.toPublicKey();
@@ -71,9 +87,20 @@ import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
     console.log(`Success! Deploy zkCoordinator transaction sent.  
-  Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);  
+    Txn hash: ${pendingTx.hash}
+    Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
+  if (useCustomLocalNetwork){
+    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
+    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
+    localData.coordinatorKey = coordinatorKey.toBase58();
+    localData.coordinatorAddress = coordinatorAddress;
+    fs.outputJsonSync(
+      "./data/addresses.json",            
+        localData,      
+      { spaces: 2 }
+    );
+  }
   console.log('');
