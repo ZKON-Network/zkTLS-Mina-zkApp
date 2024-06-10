@@ -69,7 +69,7 @@ import fs from 'fs-extra';
   console.log('');
   
   // zkApps deployment
-  console.log(`Deploy zkRequest.`);  
+  console.log(`Deploy zkRequest to ${zkRequestAddress.toBase58()}`);  
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {

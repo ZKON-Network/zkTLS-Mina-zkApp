@@ -8,7 +8,7 @@ export class ZkonRequest extends SmartContract {
   @method
   async initState(coordinator: PublicKey) {
     super.init();
-    this.coordinator.set(coordinator);
+    this.coordinator.set(coordinator);    
   }
 
   /**

@@ -50,7 +50,7 @@ import fs from 'fs-extra';
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
-    
+
     zkRequestAddress = process.env.ZQREQUEST_ADDRESS ?
       PublicKey.fromBase58(process.env.ZQREQUEST_ADDRESS) : 
       PublicKey.fromBase58('B62qpKt9QUBMEmq4Z95u2ymhsiQJkLLWBctw6NoTiSP9AzJZkR7Fxht');
@@ -96,3 +96,8 @@ import fs from 'fs-extra';
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
   console.log('');
+  
+  console.log('Coordinator sent as parameter:', zkCoordinatorAddress.toBase58())
+  console.log('');
+  const num0 = await zkRequest.coordinator.get();
+  console.log('Coordinator after state init:', num0.toBase58());

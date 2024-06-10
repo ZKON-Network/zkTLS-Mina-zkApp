@@ -116,6 +116,9 @@ describe('Zkon Request Example', () => {
   it('Prepay 2 requests', async () => {
     await localDeploy();
     await initCoordinatorState();
+    
+    const coordinatorInitiated = zkRequest.coordinator.get();
+    expect(coordinatorInitiated.equals(zkCoordinatorAddress));
 
     const initialSupply = new UInt64(1000);
         
