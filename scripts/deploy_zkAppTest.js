@@ -6,6 +6,7 @@ import {
     fetchAccount,
     AccountUpdate,
     Lightnet,
+    PublicKey,
   } from 'o1js';
 import { ZkAppTest } from '../build/src/ZkAppTest.js';
 import fs from 'fs-extra';
@@ -26,6 +27,7 @@ import fs from 'fs-extra';
   let senderKey;
   let sender;
   let localData;
+  let zkCoordinatorAddress;
 
   // Fee payer setup
   if (useCustomLocalNetwork){
@@ -34,6 +36,7 @@ import fs from 'fs-extra';
     if (!!localData){
       if (!!localData.deployerKey){
         deployerKey = PrivateKey.fromBase58(localData.deployerKey)
+        zkCoordinatorAddress = localData.coordinatorAddress ? PublicKey.fromBase58(localData.coordinatorAddress) : (await Lightnet.acquireKeyPair()).publicKey;
       }else{
         deployerKey = (await Lightnet.acquireKeyPair()).privateKey
       }
@@ -69,12 +72,14 @@ import fs from 'fs-extra';
   console.log('');
   
   // zkApps deployment
-  console.log(`Deploy zkRequest to ${zkAppAddress.toBase58()}`);  
+  console.log(`Deploy zkApp to ${zkAppAddress.toBase58()}`);  
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {
       AccountUpdate.fundNewAccount(sender)
-      await zkApp.deploy();
+      await zkApp.deploy({
+        coordinator: zkCoordinatorAddress
+      });
     }
   );
   console.log('Generating proof');
@@ -85,7 +90,7 @@ import fs from 'fs-extra';
   transaction.sign([senderKey, zkAppKey]);
   console.log('');
   console.log('Sending the transaction for deploying zkRequest.');
-  let pendingTx = await transaction.send();
+  let pendingTx = await transaction.send();  
   if (pendingTx.status === 'pending') {
     console.log(`Success! Deploy transaction sent.
   Your smart contract will be deployed
@@ -107,3 +112,13 @@ import fs from 'fs-extra';
     );
   }
   console.log('');
+
+  console.log('Fetching zkAppAccount...');
+  await fetchAccount(zkAppAddress);
+  console.log('zkAppAccount fetched');
+
+  console.log('Coordinator sent as parameter: ', zkCoordinatorAddress.toBase58())
+  console.log('')
+
+  const num0 = await zkApp.coordinator.get();
+  console.log('Coordinator after state init:', num0.toBase58());

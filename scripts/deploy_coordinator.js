@@ -86,7 +86,7 @@ import fs from 'fs-extra';
   console.log('');
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy zkCoordinator transaction sent.  
+    console.log(`Success! Deploy zkCoordinator transaction sent. Deploying to ${coordinatorAddress.toBase58()}  
     Txn hash: ${pendingTx.hash}
     Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
   }

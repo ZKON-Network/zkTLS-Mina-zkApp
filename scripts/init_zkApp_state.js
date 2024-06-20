@@ -31,6 +31,7 @@ import fs from 'fs-extra';
 
   // Fee payer setup
   if (useCustomLocalNetwork){
+    console.log("Running in lightnet...")
     localData = fs.readJsonSync('./data/addresses.json');
     let deployerKey;
     if (!!localData){
@@ -58,46 +59,56 @@ import fs from 'fs-extra';
     zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
   }
   
-  console.log(`Fetching the fee payer account information.`);
-  const accountDetails = (await fetchAccount({ publicKey: sender })).account;
-  console.log(
-    `Using the fee payer account ${sender.toBase58()} with nonce: ${
-      accountDetails?.nonce      
-    } and balance: ${accountDetails?.balance}.`
-  );  
+  // console.log(`Fetching the fee payer account information.`);
+  // const accountDetails = (await fetchAccount({ publicKey: sender })).account;
+  // console.log(
+  //   `Using the fee payer account ${sender.toBase58()} with nonce: ${
+  //     accountDetails?.nonce      
+  //   } and balance: ${accountDetails?.balance}.`
+  // );  
   
   await ZkAppTest.compile(); 
   
   const zkApp = new ZkAppTest(zkAppAddress);
   console.log('');
-    
-  console.log(`Init zkRequest state.`);  
-  let transaction = await Mina.transaction(
-    { sender, fee: transactionFee },
-    async () => {
-      await zkApp.initState(zkCoordinatorAddress);
-    }
-  );
-  console.log('Generating proof');
-  await transaction.prove()
-  console.log('Proof generated');
   
-  console.log('Signing');
-  transaction.sign([senderKey]);
-  console.log('');
-  console.log('Sending the transaction for deploying zkRequest.');
-  let pendingTx = await transaction.send();
-  if (pendingTx.status === 'pending') {
-    console.log(`Success! zkApp state initiated
-  as soon as the transaction is included in a block.
-  Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
-  }
-  console.log('Waiting for transaction inclusion in a block.');
-  await pendingTx.wait({ maxAttempts: 90 });
-  console.log('');
-  
+  console.log('Fetch zkAppAccount');
+  await fetchAccount(zkAppAddress);
+  console.log('Account fetched');
+
   console.log('Coordinator sent as parameter:', zkCoordinatorAddress.toBase58())
-  console.log('');
+  console.log('')
+
   const num0 = await zkApp.coordinator.get();
   console.log('Coordinator after state init:', num0.toBase58());
+
+      
+  // console.log(`Set coordinator address.`);  
+  // let transaction = await Mina.transaction(
+  //   { sender, fee: transactionFee },
+  //   async () => {
+  //     await zkApp.setCoordinator(zkCoordinatorAddress);
+  //   }
+  // );
+  // console.log('Generating proof');
+  // await transaction.prove()
+  // console.log('Proof generated');
+  
+  // console.log('Signing');
+  // transaction.sign([senderKey]);
+  // console.log('');
+  // console.log('Sending the transaction for setting the coordinator address.');
+  // let pendingTx = await transaction.send();
+  // if (pendingTx.status === 'pending') {
+  //   console.log(`Success! zkApp state initiated
+  // as soon as the transaction is included in a block.
+  // Txn hash: ${pendingTx.hash}
+  // Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
+  // }
+  // console.log('Waiting for transaction inclusion in a block.');
+  // await pendingTx.wait({ maxAttempts: 90 });
+  // console.log('');  
+
+  
+  // const pkFromGetter = await zkApp.getPublicKey();
+  // console.log('Coordinator from getter:', pkFromGetter.toBase58());
