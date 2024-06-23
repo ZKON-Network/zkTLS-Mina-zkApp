@@ -7,6 +7,7 @@ import {
     AccountUpdate,
     Lightnet,
     PublicKey,
+    Field,
   } from 'o1js';
 import { ZkAppTest } from '../build/src/ZkAppTest.js';
 import fs from 'fs-extra';
@@ -28,6 +29,7 @@ import fs from 'fs-extra';
   let sender;
   let localData;
   let zkCoordinatorAddress;
+  let zkAppAddress;
 
   // Fee payer setup
   if (useCustomLocalNetwork){
@@ -37,6 +39,7 @@ import fs from 'fs-extra';
       if (!!localData.deployerKey){
         deployerKey = PrivateKey.fromBase58(localData.deployerKey)
         zkCoordinatorAddress = localData.coordinatorAddress ? PublicKey.fromBase58(localData.coordinatorAddress) : (await Lightnet.acquireKeyPair()).publicKey;
+        zkAppAddress = localData.zkAppAddress ? PublicKey.fromBase58(localData.zkAppAddress) : (await Lightnet.acquireKeyPair()).publicKey;
       }else{
         deployerKey = (await Lightnet.acquireKeyPair()).privateKey
       }
@@ -54,65 +57,16 @@ import fs from 'fs-extra';
     sender = senderKey.toPublicKey();
   }
   
-  const accountDetails = (await fetchAccount({ publicKey: sender })).account;
-  console.log(
-    `Using the fee payer account ${sender.toBase58()} with nonce: ${
-      accountDetails?.nonce      
-    } and balance: ${accountDetails?.balance}.`
-  );
-  
-  // ZkRequest App  
-  const zkAppKey = PrivateKey.random();
-  const zkAppAddress = zkAppKey.toPublicKey();
-  
   await ZkAppTest.compile();
   console.log('Compiled');
   const zkApp = new ZkAppTest(zkAppAddress);
   console.log('');
   
   // zkApps deployment
-  console.log(`Deploy zkApp to ${zkAppAddress.toBase58()}`);  
-  let transaction = await Mina.transaction(
-    { sender, fee: transactionFee },
-    async () => {
-      AccountUpdate.fundNewAccount(sender)
-      await zkApp.deploy({
-        coordinator: zkCoordinatorAddress
-      });
-    }
-  );
-  await transaction.prove()
-  console.log('Proof generated');
-  
-  console.log('Signing');
-  transaction.sign([senderKey, zkAppKey]);
-  console.log('');
-  console.log('Sending the transaction for deploying zkAppTest.');
-  let pendingTx = await transaction.send();  
-  if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy transaction sent.
-  Your smart contract will be deployed
-  as soon as the transaction is included in a block.
-  Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
-  }
-  console.log('Waiting for transaction inclusion in a block.');
-  await pendingTx.wait({ maxAttempts: 90 });
-  if (useCustomLocalNetwork){
-    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
-    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
-    localData.zkAPP = zkAppKey.toBase58();
-    localData.zkAppAddress = zkAppAddress;
-    fs.outputJsonSync(
-      "./data/addresses.json",            
-        localData,      
-      { spaces: 2 }
-    );
-  }
-  console.log('');
-
+  console.log(`Reading from zkApp in ${zkAppAddress.toBase58()}`);
   console.log('Fetching zkAppAccount...');
-  await fetchAccount(zkAppAddress);
+  const accountInfo = await fetchAccount(zkAppAddress.toBase58());
+  console.log(accountInfo);
   console.log('zkAppAccount fetched');
 
   console.log('Coordinator sent as parameter: ', zkCoordinatorAddress.toBase58())
