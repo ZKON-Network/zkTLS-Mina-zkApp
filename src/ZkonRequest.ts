@@ -1,14 +1,19 @@
-import { SmartContract, PublicKey, state, State, method, Field } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field, DeployArgs } from 'o1js';
 import {ZkonRequestCoordinator} from './ZkonRequestCoordinator.js';
+
+
+export interface AppDeployProps extends Exclude<DeployArgs, undefined> {
+  /** Address of the coordinator contract */
+  coordinator: PublicKey  
+}
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();
   @state(PublicKey) coinValue = State<Field>(); //Value of the coin returned by the oracle
 
-  @method
-  async initState(coordinator: PublicKey) {
-    super.init();
-    this.coordinator.set(coordinator);    
+  async deploy(props: AppDeployProps) {
+    await super.deploy(props);
+    this.coordinator.set(props.coordinator);
   }
 
   /**

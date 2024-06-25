@@ -84,7 +84,9 @@ describe('Zkon Request Example', () => {
         src: ""
       });
       await coordinator.deploy();
-      await zkRequest.deploy();
+      await zkRequest.deploy({
+        coordinator: zkCoordinatorAddress
+      });
     });
     await txn.prove();
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
@@ -101,8 +103,7 @@ describe('Zkon Request Example', () => {
 
   async function initCoordinatorState(){
     const txn = await Mina.transaction(deployerAccount, async () => {
-      await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
-      await zkRequest.initState(zkCoordinatorAddress);
+      await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);      
     });
     await txn.prove();
     await txn.sign([deployerKey]).send();

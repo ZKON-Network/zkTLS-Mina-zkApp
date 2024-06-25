@@ -6,6 +6,7 @@ import {
     fetchAccount,
     AccountUpdate,
     Lightnet,
+    PublicKey,
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
@@ -26,6 +27,7 @@ import fs from 'fs-extra';
   let senderKey;
   let sender;
   let localData;
+  let zkCoordinatorAddress;  
 
   // Fee payer setup
   if (useCustomLocalNetwork){
@@ -40,6 +42,8 @@ import fs from 'fs-extra';
     }
     senderKey = deployerKey;
     sender = senderKey.toPublicKey();
+
+    zkCoordinatorAddress = localData.coordinatorAddress ? PublicKey.fromBase58(localData.coordinatorAddress) : (await Lightnet.acquireKeyPair()).publicKey;    
     try {
       await fetchAccount({ publicKey: sender })
     } catch (error) {
@@ -49,6 +53,7 @@ import fs from 'fs-extra';
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
+
   }
   
   console.log(`Fetching the fee payer account information.`);
@@ -57,12 +62,11 @@ import fs from 'fs-extra';
     `Using the fee payer account ${sender.toBase58()} with nonce: ${
       accountDetails?.nonce      
     } and balance: ${accountDetails?.balance}.`
-  );
-  
+    );  
+    
   // ZkRequest App  
   const zkRequestKey = PrivateKey.random();
   const zkRequestAddress = zkRequestKey.toPublicKey();
-  
   await ZkonRequest.compile();
   console.log('Compiled');
   const zkRequest = new ZkonRequest(zkRequestAddress);
@@ -74,7 +78,9 @@ import fs from 'fs-extra';
     { sender, fee: transactionFee },
     async () => {
       AccountUpdate.fundNewAccount(sender)
-      await zkRequest.deploy();
+      await zkRequest.deploy({
+        coordinator: zkCoordinatorAddress
+      });
     }
   );
   console.log('Generating proof');
@@ -84,7 +90,7 @@ import fs from 'fs-extra';
   console.log('Signing');
   transaction.sign([senderKey, zkRequestKey]);
   console.log('');
-  console.log('Sending the transaction for deploying zkRequest.');
+  console.log(`Sending the transaction for deploying zkRequest to: ${zkRequestAddress.toBase58()}`);
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
     console.log(`Success! Deploy transaction sent.
@@ -107,3 +113,19 @@ import fs from 'fs-extra';
     );
   }
   console.log('');
+
+  // zkApps deployment
+  console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
+  console.log('Fetching zkAppAccount...');
+  const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
+  
+  if (accountInfo.account.zkapp) {
+    const zkAppState = accountInfo.account.zkapp;
+    const field1 =  zkAppState.appState[0];
+    const field2 =  zkAppState.appState[1];
+    console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
+    console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
+  } else {
+    console.log('No zkApp found for the given public key.');
+  }
+  console.log('zkAppAccount fetched');

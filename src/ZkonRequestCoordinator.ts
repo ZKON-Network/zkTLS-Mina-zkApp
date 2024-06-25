@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, Permissions } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 
 class RequestEvent extends Struct ({

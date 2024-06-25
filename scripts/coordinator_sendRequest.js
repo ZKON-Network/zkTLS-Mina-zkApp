@@ -97,8 +97,8 @@ import fs from 'fs-extra';
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
     console.log(`Success! Request Sent.  
-  Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);  
+    Txn hash: ${pendingTx.hash}
+    Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);  
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });

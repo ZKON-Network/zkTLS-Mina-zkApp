@@ -8,8 +8,9 @@ import {
     Lightnet,
     PublicKey,
   } from 'o1js';
-import { ZkAppTest } from '../build/src/ZkAppTest.js';
+import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
+import { StringCircuitValue } from '../build/src/String.js';
     
   // Network configuration
   const transactionFee = 100_000_000;
@@ -28,6 +29,7 @@ import fs from 'fs-extra';
   let sender;
   let localData;
   let zkCoordinatorAddress;
+  let zkRequestAddress;
 
   // Fee payer setup
   if (useCustomLocalNetwork){
@@ -36,13 +38,15 @@ import fs from 'fs-extra';
     if (!!localData){
       if (!!localData.deployerKey){
         deployerKey = PrivateKey.fromBase58(localData.deployerKey)
-        zkCoordinatorAddress = localData.coordinatorAddress ? PublicKey.fromBase58(localData.coordinatorAddress) : (await Lightnet.acquireKeyPair()).publicKey;
       }else{
         deployerKey = (await Lightnet.acquireKeyPair()).privateKey
       }
     }
     senderKey = deployerKey;
     sender = senderKey.toPublicKey();
+
+    zkCoordinatorAddress = localData.coordinatorAddress ? PublicKey.fromBase58(localData.coordinatorAddress) : (await Lightnet.acquireKeyPair()).publicKey;    
+    zkRequestAddress = localData.zkRequestAddress ? PublicKey.fromBase58(localData.zkRequestAddress) : (await Lightnet.acquireKeyPair()).publicKey;    
     try {
       await fetchAccount({ publicKey: sender })
     } catch (error) {
@@ -52,43 +56,44 @@ import fs from 'fs-extra';
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
+
   }
   
+  console.log(`Fetching the fee payer account information.`);
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
   console.log(
     `Using the fee payer account ${sender.toBase58()} with nonce: ${
       accountDetails?.nonce      
     } and balance: ${accountDetails?.balance}.`
-  );
-  
+    );
+
+  const ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
+
+  const ipfsHashSegmented0 = segmentHash(ipfsHash);
+    
   // ZkRequest App  
-  const zkAppKey = PrivateKey.random();
-  const zkAppAddress = zkAppKey.toPublicKey();
-  
-  await ZkAppTest.compile();
+  await ZkonRequest.compile();
   console.log('Compiled');
-  const zkApp = new ZkAppTest(zkAppAddress);
+  const zkRequest = new ZkonRequest(zkRequestAddress);
   console.log('');
   
-  // zkApps deployment
-  console.log(`Deploy zkApp to ${zkAppAddress.toBase58()}`);  
+  // Send request via zkRequest app
+  console.log(`Sending request via zkRequest at ${zkRequestAddress.toBase58()}`);  
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {
-      AccountUpdate.fundNewAccount(sender)
-      await zkApp.deploy({
-        coordinator: zkCoordinatorAddress
-      });
+      await zkRequest.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
     }
   );
+  console.log('Generating proof');
   await transaction.prove()
   console.log('Proof generated');
   
   console.log('Signing');
-  transaction.sign([senderKey, zkAppKey]);
+  transaction.sign([senderKey, zkRequestKey]);
   console.log('');
-  console.log('Sending the transaction for deploying zkAppTest.');
-  let pendingTx = await transaction.send();  
+  console.log(`Sending the transaction for deploying zkRequest to: ${zkRequestAddress.toBase58()}`);
+  let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
     console.log(`Success! Deploy transaction sent.
   Your smart contract will be deployed
@@ -101,8 +106,8 @@ import fs from 'fs-extra';
   if (useCustomLocalNetwork){
     localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
     localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
-    localData.zkAPP = zkAppKey.toBase58();
-    localData.zkAppAddress = zkAppAddress;
+    localData.zkRequest = zkRequestKey.toBase58();
+    localData.zkRequestAddress = zkRequestAddress;
     fs.outputJsonSync(
       "./data/addresses.json",            
         localData,      
@@ -111,12 +116,29 @@ import fs from 'fs-extra';
   }
   console.log('');
 
+  // zkApps deployment
+  console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
   console.log('Fetching zkAppAccount...');
-  await fetchAccount(zkAppAddress);
+  const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
+  
+  if (accountInfo.account.zkapp) {
+    const zkAppState = accountInfo.account.zkapp;
+    const field1 =  zkAppState.appState[0];
+    const field2 =  zkAppState.appState[1];
+    console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
+    console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
+  } else {
+    console.log('No zkApp found for the given public key.');
+  }
   console.log('zkAppAccount fetched');
 
-  console.log('Coordinator sent as parameter: ', zkCoordinatorAddress.toBase58())
-  console.log('')
+  function segmentHash(ipfsHashFile) {
+    const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
+    const ipfsHash1 = ipfsHashFile.slice(30); // second part of the ipfsHash
 
-  const num0 = await zkApp.coordinator.get();
-  console.log('Coordinator after state init:', num0.toBase58());
+    const field1 = new StringCircuitValue(ipfsHash0).toField();
+
+    const field2 = new StringCircuitValue(ipfsHash1).toField();
+
+    return { field1, field2 };
+  }

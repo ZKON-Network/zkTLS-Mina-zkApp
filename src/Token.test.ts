@@ -55,8 +55,7 @@ describe('Zkon Token Tests', () => {
       });
     });
     await txn.prove();
-    await txn.sign([deployerAccount.key, tokenAdmin.key, zktPrivateKey]).send();
-    console.log('sent');
+    await txn.sign([deployerAccount.key, tokenAdmin.key, zktPrivateKey]).send();    
   })
   
   it('mint ZkonToken to receiver account', async () => {
