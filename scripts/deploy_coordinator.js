@@ -18,8 +18,8 @@ import fs from 'fs-extra';
       ? 'http://localhost:8080/graphql'
       : 'https://api.minascan.io/node/devnet/v1/graphql',
     lightnetAccountManager: 'http://localhost:8181',
-    // archive: useCustomLocalNetwork
-    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
+    archive: useCustomLocalNetwork
+    ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
   

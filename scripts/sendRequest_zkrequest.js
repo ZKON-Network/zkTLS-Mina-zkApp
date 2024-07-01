@@ -20,8 +20,8 @@ import { StringCircuitValue } from '../build/src/String.js';
       ? 'http://localhost:8080/graphql'
       : 'https://api.minascan.io/node/devnet/v1/graphql',
     lightnetAccountManager: 'http://localhost:8181',
-    // archive: useCustomLocalNetwork
-    // ? '' : 'https://api.minascan.io/archive/devnet/v1/graphql',
+    archive: useCustomLocalNetwork
+    ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
 
@@ -90,7 +90,7 @@ import { StringCircuitValue } from '../build/src/String.js';
   console.log('Proof generated');
   
   console.log('Signing');
-  transaction.sign([senderKey, zkRequestKey]);
+  transaction.sign([senderKey]);
   console.log('');
   console.log(`Sending the transaction for deploying zkRequest to: ${zkRequestAddress.toBase58()}`);
   let pendingTx = await transaction.send();
