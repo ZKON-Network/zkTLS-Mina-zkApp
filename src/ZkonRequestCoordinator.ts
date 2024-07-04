@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, Permissions } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, Permissions, assert } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 
 class RequestEvent extends Struct ({
@@ -94,26 +94,27 @@ export class ZkonRequestCoordinator extends SmartContract {
   }  
 
   @method
-  // async recordRequestFullfillment(requestId: Field,proof: ZKProgramPoof) { 
   async recordRequestFullfillment(requestId: Field) {
-    // Verify "ownership" of the request
+    // Assert caller is the oracle
+    const caller = this.sender.getAndRequireSignature();
+    caller.assertEquals(this.oracle.getAndRequireEquals());
     
-    // const fetchedEvents = await this.fetchEvents();
-    // assert(fetchedEvents.length > 0);
+    const fetchedEvents = await this.fetchEvents();
+    assert(fetchedEvents.length > 0);
 
-    // // /* Checks if requestId exists */
-    // assert(
-    //   fetchedEvents.some(
-    //     (req) =>
-    //       req.type == 'requested' 
-    //       // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
-    //       //   ? true
-    //       //   : false) 
-    //         // && requestId === req.event.data.toFields(null)[0]
-    //         // && requestId.equals(req.event.data.toFields(null)[0])
-    //   ),
-    //   'RequestId not found'
-    // );
+    /* Checks if requestId exists */
+    assert(
+      fetchedEvents.some(
+        (req) =>
+          req.type == 'requested' 
+          // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
+          //   ? true
+          //   : false) 
+          //   && requestId === req.event.data.toFields(null)[0]
+          //   && requestId.equals(req.event.data.toFields(null)[0])
+      ),
+      'RequestId not found'
+    );
 
     /* Checks if requestId has been fullfilled */
     // assert(
@@ -130,12 +131,5 @@ export class ZkonRequestCoordinator extends SmartContract {
     // );
 
     this.emitEvent('fullfilled', requestId);
-  }
-
-  @method
-  async fakeEvent() {
-    // const fetchedEvents = await this.fetchEvents();
-    // assert(fetchedEvents.length > 0);
-    this.emitEvent('fullfilled', Field(1));
   }
 }
