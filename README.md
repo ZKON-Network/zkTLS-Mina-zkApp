@@ -21,6 +21,12 @@ npm run testw # watch mode
 npm run coverage
 ```
 
+## ToDo
+
+- [x] move zkProgram to src folder
+- [x] add zkon-request zkapp and it's coordinator
+- [ ] check the zkon-request zkapp and fix the coordinator
+
 ## License
 
 [Apache-2.0](LICENSE)
