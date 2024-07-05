@@ -52,4 +52,4 @@ const ZkonZkProgram = ZkProgram({
     }
 });
 
-export {ZkonZkProgram};
+export {ZkonZkProgram, Commitments};
