@@ -11,6 +11,7 @@ import {
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
 import { StringCircuitValue } from '../build/src/String.js';
+import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
     
   // Network configuration
   const transactionFee = 100_000_000;
@@ -71,7 +72,10 @@ import { StringCircuitValue } from '../build/src/String.js';
 
   const ipfsHashSegmented0 = segmentHash(ipfsHash);
     
-  // ZkRequest App  
+  await ZkonRequestCoordinator.compile();
+  // ZkRequest App
+  await fetchAccount({ publicKey: zkRequestAddress }); // Ensure it exis...  
+
   await ZkonRequest.compile();
   console.log('Compiled');
   const zkRequest = new ZkonRequest(zkRequestAddress);

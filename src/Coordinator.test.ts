@@ -8,6 +8,7 @@ import {
   Poseidon,
   provablePure,
   UInt8,
+  fetchAccount,
 } from 'o1js';
 import { FungibleToken, FungibleTokenAdmin } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator.js';
@@ -31,6 +32,7 @@ describe('Zkon Token Tests', () => {
     treasuryAddress: PublicKey,
     treasuryPrivateKey: PrivateKey,
     oracleAddress: PublicKey,
+    oracleKey: PrivateKey,
     ipfsHash: string,
     tokenAdmin: Mina.TestPublicKey,
     tokenAdminContract: FungibleTokenAdmin;
@@ -47,6 +49,8 @@ describe('Zkon Token Tests', () => {
       requesterAccount = Local.testAccounts[1];
       requesterKey = Local.testAccounts[1].key;
       tokenAdmin = Local.testAccounts[2];
+      oracleKey = Local.testAccounts[3].key;
+      oracleAddress = Local.testAccounts[3];
       zktPrivateKey = PrivateKey.random();
       zktAddress = zktPrivateKey.toPublicKey();
       token = new FungibleToken(zktAddress);
@@ -59,7 +63,8 @@ describe('Zkon Token Tests', () => {
       treasuryPrivateKey = PrivateKey.random();
       treasuryAddress = zkCoordinatorPrivateKey.toPublicKey();
 
-      oracleAddress = PrivateKey.random().toPublicKey();
+      // oracleKey = PrivateKey.random();
+      // oracleAddress = oracleKey.toPublicKey();
 
       feePrice = new UInt64(100);
 
@@ -155,7 +160,6 @@ describe('Zkon Token Tests', () => {
         fee: 1e8,
       },
       async () => {
-        // AccountUpdate.fundNewAccount(deployerAccount);
         await coordinator.sendRequest(
           deployerAccount,
           ipfsHashSegmented0.field1,
@@ -166,12 +170,6 @@ describe('Zkon Token Tests', () => {
     txn.sign([requesterKey, deployerKey]);
     await txn.prove();
     await txn.send();
-
-    // requesterBalance = (await token.getBalanceOf(requesterAccount)).toString();
-    // expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
-    
-    // let treasuryBalance = (await token.getBalanceOf(treasuryAddress)).toString();
-    // expect(treasuryBalance).toEqual(feePrice.toString());
     
     const events = await coordinator.fetchEvents();
     expect(events[0].type).toEqual('requested');
@@ -187,64 +185,84 @@ describe('Zkon Token Tests', () => {
     expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
     const dehashed = PublicKey.fromFields([requestEvent[3], requestEvent[4]]);
     expect(dehashed.toBase58()).toEqual(deployerAccount.toBase58());
-    
 
-    // console.log(StringCircuitValue.fromField(ipfsHashSegmented0.field1).toString());
+    await fetchAccount({publicKey: oracleAddress});
+    console.log("Oracle Address: ", oracleAddress.toBase58())
+    const fullfillTxn = await Mina.transaction(
+      {
+        sender: oracleAddress,
+        fee: 1e8,
+      },
+      async () => {
+        await coordinator.recordRequestFullfillment(expectedRequestId);
+      }
+    );
+    await fullfillTxn.prove();
+    await (await fullfillTxn.sign([oracleKey]).send()).wait;
+
+    const newEvents = await coordinator.fetchEvents();
+    console.log(newEvents)
+    expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
+
   });
 
   // it('Fullfill request', async () => {
-  // await localDeploy();
-  // await initCoordinatorState();
+  //   await localDeploy();
+  //   await initCoordinatorState();
 
-  // const initialSupply = new UInt64(1_000);
+    // let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
+    // expect(requesterBalance).toEqual(initialSupply.toString());
 
-  // let tx = await Mina.transaction(deployerAccount, async () => {
-  //   AccountUpdate.fundNewAccount(deployerAccount);
-  //   token.mint(requesterAccount, initialSupply);
-  // });
-  // await tx.prove();
-  // await tx.sign([deployerKey]).send();
+    // const ipfsHashSegmented0 = segmentHash(ipfsHash);
 
-  // let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
-  // expect(requesterBalance).toEqual(initialSupply.toString());
+    // const txn = await Mina.transaction(
+    //   {
+    //     sender: requesterAccount,
+    //     fee: 1e8,
+    //   },
+    //   async () => {
+    //     await coordinator.sendRequest(
+    //       deployerAccount,
+    //       ipfsHashSegmented0.field1,
+    //       ipfsHashSegmented0.field2
+    //     );
+    //   }
+    // );
+    // txn.sign([requesterKey, deployerKey]);
+    // await txn.prove();
+    // await txn.send();
 
-  // const ipfsHashSegmented0 = segmentHash(ipfsHashFile0)
+    // requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
+    // expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
 
-  // const txn = await Mina.transaction(requesterAccount, () => {
-  //   AccountUpdate.fundNewAccount(deployerAccount);
-  //   coordinator.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
-  // });
-  // await txn.prove();
-  // await txn.sign([requesterKey, deployerKey]).send();
+    // let treasuryBalance = await Mina.getBalance(treasuryAddress,tokenId).value.toString();
+    // expect(treasuryBalance).toEqual(feePrice.toString());
 
-  // requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
-  // expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
+    // const events = await coordinator.fetchEvents();
+    // expect(events[0].type).toEqual('requested');
+    // const requestEvent = provablePure(events[0].event.data).toFields(
+    //   events[0].event.data
+    // );
+    // const expectedRequestId = Poseidon.hash([
+    //   Field(1),
+    //   deployerAccount.toFields()[0],
+    // ]);
+    // expect(requestEvent[0]).toEqual(expectedRequestId);
+    // expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
+    // expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
+    // const dehashed = PublicKey.fromFields([requestEvent[3], requestEvent[4]]);
+    // expect(dehashed.toBase58()).toEqual(deployerAccount.toBase58());  
 
-  // let treasuryBalance = await Mina.getBalance(treasuryAddress,tokenId).value.toString();
-  // expect(treasuryBalance).toEqual(feePrice.toString());
 
-  // const events = await coordinator.fetchEvents();
-  // const requestEvent = provablePure(events[0].event.data).toFields(events[0].event.data) ;
-  // console.log(requestEvent)
-  // const expectedRequestId = Poseidon.hash([Field(1),requesterAccount.toFields()[0]])
-  // expect(requestEvent[0]).toEqual(expectedRequestId);
-  // expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
-  // expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
+    // const fullfillTxn = await Mina.transaction(requesterAccount, async () => {
+    //   await coordinator.recordRequestFullfillment(expectedRequestId);
+    // });
+    // await fullfillTxn.prove();
+    // await (await fullfillTxn.sign([requesterKey]).send()).wait;
 
-  //   // Provable.log(event);
-  //   // Provable.log(expectedRequestId);
-  //   // Provable.log(event.assertEquals(expectedRequestId) == undefined ? true : false);
-
-  //   const fullfillTxn = await Mina.transaction(requesterAccount, () => {
-  //     // coordinator.recordRequestFullfillment(expectedRequestId);
-  //     coordinator.fakeEvent();
-  //   });
-  //   await fullfillTxn.prove();
-  //   await (await fullfillTxn.sign([requesterKey]).send()).wait;
-
-  //   const newEvents = await coordinator.fetchEvents();
-  //   console.log(newEvents)
-  //   // expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
+    // const newEvents = await coordinator.fetchEvents();
+    // console.log(newEvents)
+    // expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
 
   // });
 
