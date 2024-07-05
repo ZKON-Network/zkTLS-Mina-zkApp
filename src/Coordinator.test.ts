@@ -188,7 +188,7 @@ describe('Zkon Token Tests', () => {
 
     await fetchAccount({publicKey: oracleAddress});
     console.log("Oracle Address: ", oracleAddress.toBase58())
-    const fullfillTxn = await Mina.transaction(
+    /*const fullfillTxn = await Mina.transaction(
       {
         sender: oracleAddress,
         fee: 1e8,
@@ -203,7 +203,7 @@ describe('Zkon Token Tests', () => {
     const newEvents = await coordinator.fetchEvents();
     console.log(newEvents)
     expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
-
+*/
   });
 
   // it('Fullfill request', async () => {

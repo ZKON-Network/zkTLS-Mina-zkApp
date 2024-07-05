@@ -1,5 +1,6 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, Permissions, assert } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
+import { Commitments, ZkonZkProgram } from './zkProgram';
 
 class RequestEvent extends Struct ({
   id: Field,
@@ -94,7 +95,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   }  
 
   @method
-  async recordRequestFullfillment(requestId: Field) {
+  async recordRequestFullfillment(requestId: Field, proof: Proof<Commitments, void>) {
     // Assert caller is the oracle
     const caller = this.sender.getAndRequireSignature();
     caller.assertEquals(this.oracle.getAndRequireEquals());
@@ -129,6 +130,9 @@ export class ZkonRequestCoordinator extends SmartContract {
     //   ),
     //   'RequestId already fullfilled'
     // );
+
+    const isValid = await ZkonZkProgram.verify(proof);
+    assert(isValid);
 
     this.emitEvent('fullfilled', requestId);
   }

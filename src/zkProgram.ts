@@ -1,15 +1,15 @@
-import { Mina, PublicKey, UInt32,Field,  ZkProgram, Bytes, Hash, state, Bool, verify, Struct, Provable} from 'o1js';
-import { p256, secp256r1 } from '@noble/curves/p256';
-import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
+import { Field,  ZkProgram, Bool, Struct} from 'o1js';
+import { p256 } from '@noble/curves/p256';
+import { hexToBytes } from '@noble/hashes/utils';
 
-//Warning: Use zkProgram to only verify the prrof, not generate. 
+//Warning: Use zkProgram to only verify the proof, not generate. 
 
 class Commitments extends Struct({
-    availableSupply: Field,
+    response: Field,
     timestamp: Field
   }){
     constructor(value:{
-      availableSupply: Field,
+      response: Field,
       timestamp: Field}){
       super(value)
     }
@@ -21,7 +21,7 @@ const value = '8af6b1b64bc2c65ff949d399771644d1b6028960ac2c984d3dfedf71c3d1a7404
 const msgByteArray = hexToBytes(value)
 
 const ZkonZkProgram = ZkProgram({
-    name:'egrains-proof',
+    name:'zkon-proof',
     publicInput: Commitments,
 
     methods:{
@@ -44,8 +44,8 @@ const ZkonZkProgram = ZkProgram({
             // Individual Commitment Verification
             D.assertEquals(C);
     
-            // Committmenet verification of availableSupply & timestamp
-            commitment.availableSupply.assertEquals(decommitment.availableSupply);
+            // Committmenet verification of response & timestamp
+            commitment.response.assertEquals(decommitment.response);
             commitment.timestamp.assertEquals(decommitment.timestamp);
         }
       }
