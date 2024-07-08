@@ -1,13 +1,11 @@
-import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, Proof } from 'o1js';
-import {ZkonRequestCoordinator} from './ZkonRequestCoordinator.js';
+import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, Proof, Struct } from 'o1js';
+import {ZkonRequestCoordinator, RequestEvent} from './ZkonRequestCoordinator.js';
 import { Commitments } from './zkProgram.js';
-
 
 export interface AppDeployProps extends Exclude<DeployArgs, undefined> {
   /** Address of the coordinator contract */
   coordinator: PublicKey  
 }
-
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();
@@ -17,6 +15,10 @@ export class ZkonRequest extends SmartContract {
     await super.deploy(props);
     this.coordinator.set(props.coordinator);
   }
+
+  events = {
+    requested: RequestEvent
+  };
 
   /**
    * @notice Creates a request to the stored coordinator address
@@ -28,7 +30,20 @@ export class ZkonRequest extends SmartContract {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     
-    return coordinator.sendRequest(this.address, hashPart1, hashPart2);
+    const requestId = await coordinator.sendRequest(this.address, hashPart1, hashPart2);
+    const sender = this.address.toFields();
+
+    const event = new RequestEvent({
+      id: requestId,
+      hash1: hashPart1,
+      hash2: hashPart2,
+      senderX: sender[0],
+      senderY: sender[1]
+    });
+    
+    this.emitEvent('requested', event);
+
+    return requestId;
   }
 
   /**
