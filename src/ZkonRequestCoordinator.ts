@@ -2,12 +2,18 @@ import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64
 import { FungibleToken } from 'mina-fungible-token';
 import { Commitments, ZkonZkProgram } from './zkProgram';
 
-export class RequestEvent extends Struct ({
+class RequestEvent extends Struct ({
   id: Field,
   hash1: Field,
   hash2: Field,
   senderX: Field,
   senderY: Field
+}) {}
+
+export class ExternalRequestEvent extends Struct ({
+  id: Field,
+  hash1: Field,
+  hash2: Field  
 }) {}
 
 class RequestPaidEvent extends Struct ({

@@ -1,5 +1,5 @@
 import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, Proof, Struct } from 'o1js';
-import {ZkonRequestCoordinator, RequestEvent} from './ZkonRequestCoordinator.js';
+import {ZkonRequestCoordinator, ExternalRequestEvent} from './ZkonRequestCoordinator.js';
 import { Commitments } from './zkProgram.js';
 
 export interface AppDeployProps extends Exclude<DeployArgs, undefined> {
@@ -17,7 +17,7 @@ export class ZkonRequest extends SmartContract {
   }
 
   events = {
-    requested: RequestEvent
+    requested: ExternalRequestEvent
   };
 
   /**
@@ -33,12 +33,10 @@ export class ZkonRequest extends SmartContract {
     const requestId = await coordinator.sendRequest(this.address, hashPart1, hashPart2);
     const sender = this.address.toFields();
 
-    const event = new RequestEvent({
+    const event = new ExternalRequestEvent({
       id: requestId,
       hash1: hashPart1,
-      hash2: hashPart2,
-      senderX: sender[0],
-      senderY: sender[1]
+      hash2: hashPart2,      
     });
     
     this.emitEvent('requested', event);
