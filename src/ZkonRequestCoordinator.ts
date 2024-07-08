@@ -99,37 +99,6 @@ export class ZkonRequestCoordinator extends SmartContract {
     // Assert caller is the oracle
     const caller = this.sender.getAndRequireSignature();
     caller.assertEquals(this.oracle.getAndRequireEquals());
-    
-    const fetchedEvents = await this.fetchEvents();
-    assert(fetchedEvents.length > 0);
-
-    /* Checks if requestId exists */
-    assert(
-      fetchedEvents.some(
-        (req) =>
-          req.type == 'requested' 
-          // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
-          //   ? true
-          //   : false) 
-          //   && requestId === req.event.data.toFields(null)[0]
-          //   && requestId.equals(req.event.data.toFields(null)[0])
-      ),
-      'RequestId not found'
-    );
-
-    /* Checks if requestId has been fullfilled */
-    // assert(
-    //   fetchedEvents.some(
-    //     (req) =>
-    //       req.type == 'fullfilled' 
-    //       // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
-    //       //   ? true
-    //       //   : false) 
-    //         // && requestId === req.event.data.toFields(null)[0]
-    //         // && requestId.equals(req.event.data.toFields(null)[0])
-    //   ),
-    //   'RequestId already fullfilled'
-    // );
 
     const isValid = await ZkonZkProgram.verify(proof);
     assert(isValid);
