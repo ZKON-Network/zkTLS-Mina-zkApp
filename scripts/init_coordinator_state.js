@@ -28,6 +28,7 @@ import fs from 'fs-extra';
       sender,
       localData,
       oracleAddress,
+      oracleKey,
       treasuryAddress,
       tokenAddress,
       zkCoordinatorAddress
@@ -67,7 +68,12 @@ import fs from 'fs-extra';
       PublicKey.fromBase58(process.env.TREASURY_ADDRESS) : 
       PublicKey.fromBase58('B62qkaxsQG86VQRsHPqZBQe8Pfwj7TXH3dm7domVe44gL7EdMToetzd');
       
-    oracleAddress = PrivateKey.random().toPublicKey();//Mocked. Variable not used
+      treasuryAddress = process.env.TREASURY_ADDRESS ? 
+        PublicKey.fromBase58(process.env.TREASURY_ADDRESS) : 
+        PublicKey.fromBase58('B62qkaxsQG86VQRsHPqZBQe8Pfwj7TXH3dm7domVe44gL7EdMToetzd');
+      
+        oracleKey = PrivateKey.random();
+        oracleAddress = oracleKey.toPublicKey();
 
     zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
   }

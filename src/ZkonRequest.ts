@@ -1,11 +1,14 @@
-import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, Proof, Struct } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, Proof, ZkProgram } from 'o1js';
 import {ZkonRequestCoordinator, ExternalRequestEvent} from './ZkonRequestCoordinator.js';
-import { Commitments } from './zkProgram.js';
+import { ZkonZkProgram } from './zkProgram.js';
 
 export interface AppDeployProps extends Exclude<DeployArgs, undefined> {
   /** Address of the coordinator contract */
   coordinator: PublicKey  
 }
+
+export let ZkonProof_ = ZkProgram.Proof(ZkonZkProgram);
+export class ZkonProof extends ZkonProof_ {}
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();
@@ -48,10 +51,10 @@ export class ZkonRequest extends SmartContract {
    * @notice Validates the request
    */
   @method
-  async receiveZkonResponse(requestId: Field, proof: Proof<Commitments,void>,) {
+  async receiveZkonResponse(requestId: Field, proof: ZkonProof) {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     await coordinator.recordRequestFullfillment(requestId, proof);
-    this.coinValue.set(proof.publicInput.response);
+    this.coinValue.set(proof.publicInput);
   }
 }

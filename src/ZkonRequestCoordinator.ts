@@ -1,12 +1,12 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof, DeployArgs } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof, DeployArgs, ZkProgram } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
-import { Commitments, ZkonZkProgram } from './zkProgram';
+import { ZkonZkProgram } from './zkProgram.js';
 
 export interface CoordinatorDeployProps extends Exclude<DeployArgs, undefined> {
   oracle : PublicKey
   zkonToken : PublicKey
   treasury : PublicKey
-  feePrice : UInt64  
+  feePrice : UInt64
 }
 
 class RequestEvent extends Struct ({
@@ -28,6 +28,9 @@ class RequestPaidEvent extends Struct ({
   requestsPaid: Field,
   createdAt: UInt64
 }) {}
+
+export let ZkonProof_ = ZkProgram.Proof(ZkonZkProgram);
+export class ZkonProof extends ZkonProof_ {}
 
 export class ZkonRequestCoordinator extends SmartContract {
   @state(PublicKey) oracle = State<PublicKey>();
@@ -107,14 +110,13 @@ export class ZkonRequestCoordinator extends SmartContract {
   }  
 
   @method
-  async recordRequestFullfillment(requestId: Field, proof: Proof<Commitments, void>) {
+  async recordRequestFullfillment(requestId: Field, proof: ZkonProof) {
     // Assert caller is the oracle
     const caller = this.sender.getAndRequireSignature();
     caller.assertEquals(this.oracle.getAndRequireEquals());
 
-    const isValid = await ZkonZkProgram.verify(proof);
-    assert(isValid);
-
+    await proof.verify();
+    
     this.emitEvent('fullfilled', requestId);
   }
 }

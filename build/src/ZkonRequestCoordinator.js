@@ -7,9 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, ZkProgram } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
-import { ZkonZkProgram } from './zkProgram';
+import { ZkonZkProgram } from './zkProgram.js';
 class RequestEvent extends Struct({
     id: Field,
     hash1: Field,
@@ -29,6 +29,9 @@ class RequestPaidEvent extends Struct({
     requestsPaid: Field,
     createdAt: UInt64
 }) {
+}
+export let ZkonProof_ = ZkProgram.Proof(ZkonZkProgram);
+export class ZkonProof extends ZkonProof_ {
 }
 export class ZkonRequestCoordinator extends SmartContract {
     constructor() {
@@ -91,8 +94,7 @@ export class ZkonRequestCoordinator extends SmartContract {
         // Assert caller is the oracle
         const caller = this.sender.getAndRequireSignature();
         caller.assertEquals(this.oracle.getAndRequireEquals());
-        const isValid = await ZkonZkProgram.verify(proof);
-        assert(isValid);
+        await proof.verify();
         this.emitEvent('fullfilled', requestId);
     }
 }
@@ -143,7 +145,7 @@ __decorate([
 __decorate([
     method,
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Field, Proof]),
+    __metadata("design:paramtypes", [Field, ZkonProof]),
     __metadata("design:returntype", Promise)
 ], ZkonRequestCoordinator.prototype, "recordRequestFullfillment", null);
 //# sourceMappingURL=ZkonRequestCoordinator.js.map

@@ -7,8 +7,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { SmartContract, PublicKey, state, State, method, Field, Proof } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field, ZkProgram } from 'o1js';
 import { ZkonRequestCoordinator, ExternalRequestEvent } from './ZkonRequestCoordinator.js';
+import { ZkonZkProgram } from './zkProgram.js';
+export let ZkonProof_ = ZkProgram.Proof(ZkonZkProgram);
+export class ZkonProof extends ZkonProof_ {
+}
 export class ZkonRequest extends SmartContract {
     constructor() {
         super(...arguments);
@@ -47,7 +51,7 @@ export class ZkonRequest extends SmartContract {
         const coordinatorAddress = this.coordinator.getAndRequireEquals();
         const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
         await coordinator.recordRequestFullfillment(requestId, proof);
-        this.coinValue.set(proof.publicInput.response);
+        this.coinValue.set(proof.publicInput);
     }
 }
 __decorate([
@@ -67,7 +71,7 @@ __decorate([
 __decorate([
     method,
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Field, Proof]),
+    __metadata("design:paramtypes", [Field, ZkonProof]),
     __metadata("design:returntype", Promise)
 ], ZkonRequest.prototype, "receiveZkonResponse", null);
 //# sourceMappingURL=ZkonRequest.js.map

@@ -5,9 +5,12 @@ import {
     PrivateKey,
     fetchAccount,
     Lightnet,
-    AccountUpdate
+    AccountUpdate,
+    PublicKey,
+    UInt64
   } from 'o1js';
 import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
+import { ZkonZkProgram } from '../build/src/zkProgram.js';
 import fs from 'fs-extra';
     
   // // Network configuration
@@ -22,11 +25,16 @@ import fs from 'fs-extra';
     ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
   });
   Mina.setActiveInstance(network);
-  
-  let senderKey;
-  let sender;
-  let localData;
 
+  let senderKey,
+      sender,
+      localData,
+      oracleAddress,
+      oracleKey,
+      treasuryAddress,
+      tokenAddress,
+      zkCoordinatorAddress  
+  
   // Fee payer setup
   if (useCustomLocalNetwork){
     localData = fs.readJsonSync('./data/addresses.json');
@@ -46,9 +54,23 @@ import fs from 'fs-extra';
       senderKey = (await Lightnet.acquireKeyPair()).privateKey
       sender = senderKey.toPublicKey();
     }
+
+    oracleKey = PrivateKey.random();
+    oracleAddress = oracleKey.toPublicKey();
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
+
+    tokenAddress = process.env.TOKEN_ADDRESS ?
+    PublicKey.fromBase58(process.env.TOKEN_ADDRESS) : 
+      PublicKey.fromBase58('B62qrqYtrQLQyudxG38HkLZ4GFB2Zy1z64DjqQaD7yv3pwGBQQQfSZ3');
+    
+    treasuryAddress = process.env.TREASURY_ADDRESS ? 
+      PublicKey.fromBase58(process.env.TREASURY_ADDRESS) : 
+      PublicKey.fromBase58('B62qkaxsQG86VQRsHPqZBQe8Pfwj7TXH3dm7domVe44gL7EdMToetzd');
+
+    oracleKey = PrivateKey.random();
+    oracleAddress = oracleKey.toPublicKey();
   }
 
   console.log(`Fetching the fee payer account information.`);
@@ -60,21 +82,32 @@ import fs from 'fs-extra';
   );
   console.log('');
   
-  // // Coordinator compilation  
+  // // Coordinator compilation
+  await ZkonZkProgram.compile();
   await ZkonRequestCoordinator.compile();
   const coordinatorKey = PrivateKey.random();
   const coordinatorAddress = coordinatorKey.toPublicKey();
   const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
+  const feePrice = new UInt64(100);
   console.log('');
 
   // zkApps deployment
   console.log(`Init coordinator state.`);
+  console.log('Oracle: ',oracleAddress.toBase58())
+  console.log('Token: ',tokenAddress.toBase58())
+  console.log('Fee: ',feePrice.toString())
+  console.log('Treasury: ',treasuryAddress.toBase58())
 
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {
       AccountUpdate.fundNewAccount(sender)
-      await coordinator.deploy();
+      await coordinator.deploy({
+        oracle: oracleAddress,
+        tokenAddress: tokenAddress,
+        feePrice: feePrice,
+        treasuryAddress: sender
+      });
     }
   );
   console.log('Signing');
@@ -99,6 +132,18 @@ import fs from 'fs-extra';
     localData.coordinatorAddress = coordinatorAddress;
     fs.outputJsonSync(
       "./data/addresses.json",            
+        localData,      
+      { spaces: 2 }
+    );
+  }else{
+    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
+    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
+    localData.coordinatorKey = coordinatorKey.toBase58();
+    localData.coordinatorAddress = coordinatorAddress.toBase58();
+    localData.oracleKey = oracleKey.toBase58();
+    localData.oracleAddress = oracleAddress.toBase58();
+    fs.outputJsonSync(
+      "./data/devnet/addresses.json",            
         localData,      
       { spaces: 2 }
     );

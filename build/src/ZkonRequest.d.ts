@@ -1,9 +1,47 @@
 import { SmartContract, PublicKey, State, Field, DeployArgs, Proof } from 'o1js';
 import { ExternalRequestEvent } from './ZkonRequestCoordinator.js';
-import { Commitments } from './zkProgram.js';
 export interface AppDeployProps extends Exclude<DeployArgs, undefined> {
     /** Address of the coordinator contract */
     coordinator: PublicKey;
+}
+export declare let ZkonProof_: {
+    new ({ proof, publicInput, publicOutput, maxProofsVerified, }: {
+        proof: unknown;
+        publicInput: import("o1js/dist/node/lib/provable/field.js").Field;
+        publicOutput: void;
+        maxProofsVerified: 0 | 1 | 2;
+    }): {
+        verify(): void;
+        verifyIf(condition: import("o1js/dist/node/lib/provable/bool.js").Bool): void;
+        publicInput: import("o1js/dist/node/lib/provable/field.js").Field;
+        publicOutput: void;
+        proof: unknown;
+        maxProofsVerified: 0 | 1 | 2;
+        shouldVerify: import("o1js/dist/node/lib/provable/bool.js").Bool;
+        toJSON(): import("o1js").JsonProof;
+    };
+    publicInputType: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);
+    publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
+    tag: () => {
+        name: string;
+        publicInputType: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);
+        publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
+    };
+    fromJSON<S extends (new (...args: any) => Proof<unknown, unknown>) & {
+        prototype: Proof<any, any>;
+        fromJSON: typeof Proof.fromJSON;
+        dummy: typeof Proof.dummy;
+        publicInputType: import("o1js").FlexibleProvablePure<any>;
+        publicOutputType: import("o1js").FlexibleProvablePure<any>;
+        tag: () => {
+            name: string;
+        };
+    } & {
+        prototype: Proof<unknown, unknown>;
+    }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<Proof<Input, OutPut>>;
+};
+export declare class ZkonProof extends ZkonProof_ {
 }
 export declare class ZkonRequest extends SmartContract {
     coordinator: State<PublicKey>;
@@ -21,5 +59,5 @@ export declare class ZkonRequest extends SmartContract {
     /**
      * @notice Validates the request
      */
-    receiveZkonResponse(requestId: Field, proof: Proof<Commitments, void>): Promise<void>;
+    receiveZkonResponse(requestId: Field, proof: ZkonProof): Promise<void>;
 }
