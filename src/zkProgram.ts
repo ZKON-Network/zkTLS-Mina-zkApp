@@ -2,20 +2,7 @@ import { Mina, PublicKey, UInt32,Field,  ZkProgram, Bytes, Hash, state, Bool, ve
 import { p256, secp256r1 } from '@noble/curves/p256';
 import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
 
-//Warning: Use zkProgram to only verify the prrof, not generate. 
-
-class Commitments extends Struct({
-    availableSupply: Field,
-    timestamp: Field
-  }){
-    constructor(value:{
-      availableSupply: Field,
-      timestamp: Field}){
-      super(value)
-    }
-}
-
-class P256Data extends Struct({
+export class P256Data extends Struct({
   signature: String,
   messageHex: String
 }){}
@@ -33,16 +20,14 @@ const checkECDSA =(message:string, signature:string): Bool=>{
 
 const ZkonZkProgram = ZkProgram({
   name:'egrains-proof',
-  publicInput: Commitments,
+  publicInput: Field,
 
   methods:{
     verifySource:{
-      privateInputs: [Commitments,Field,Field, P256Data], 
+      privateInputs: [Field, P256Data], 
       async method (
-        commitment: Commitments,
-        decommitment: Commitments,
-        C: Field,
-        D: Field,
+        commitment: Field,
+        decommitment: Field,
         p256_data: P256Data
       ){
           //P256 Signature Verification
@@ -53,12 +38,9 @@ const ZkonZkProgram = ZkProgram({
             assert.assertEquals(checkECDSASignature);
           })
           
-          // Individual Commitment Verification
-          D.assertEquals(C);
-  
-          // Committmenet verification of availableSupply & timestamp
-          commitment.availableSupply.assertEquals(decommitment.availableSupply);
-          commitment.timestamp.assertEquals(decommitment.timestamp);
+          // Check if the SH256 Hash commitment of the data-source is same 
+          // as the response reconstructed from the notary-proof file.
+          decommitment.assertEquals(commitment);
       }
     }
   }
