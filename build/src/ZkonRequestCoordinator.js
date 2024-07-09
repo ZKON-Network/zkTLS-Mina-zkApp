@@ -18,6 +18,12 @@ class RequestEvent extends Struct({
     senderY: Field
 }) {
 }
+export class ExternalRequestEvent extends Struct({
+    id: Field,
+    hash1: Field,
+    hash2: Field
+}) {
+}
 class RequestPaidEvent extends Struct({
     zkApp: PublicKey,
     requestsPaid: Field,
@@ -38,12 +44,12 @@ export class ZkonRequestCoordinator extends SmartContract {
             requestsPaid: RequestPaidEvent
         };
     }
-    async initState(treasury, zkTokenAddress, feePrice, oracle) {
-        super.init();
-        this.feePrice.set(feePrice);
-        this.treasury.set(treasury);
-        this.zkonToken.set(zkTokenAddress);
-        this.oracle.set(oracle);
+    async deploy(props) {
+        await super.deploy(props);
+        this.oracle.set(props.oracle);
+        this.zkonToken.set(props.zkonToken);
+        this.treasury.set(props.treasury);
+        this.feePrice.set(props.feePrice);
         this.requestCount.set(new UInt64(1));
     }
     async setFeePrice(feePrice) {
@@ -85,29 +91,6 @@ export class ZkonRequestCoordinator extends SmartContract {
         // Assert caller is the oracle
         const caller = this.sender.getAndRequireSignature();
         caller.assertEquals(this.oracle.getAndRequireEquals());
-        const fetchedEvents = await this.fetchEvents();
-        assert(fetchedEvents.length > 0);
-        /* Checks if requestId exists */
-        assert(fetchedEvents.some((req) => req.type == 'requested'
-        // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
-        //   ? true
-        //   : false) 
-        //   && requestId === req.event.data.toFields(null)[0]
-        //   && requestId.equals(req.event.data.toFields(null)[0])
-        ), 'RequestId not found');
-        /* Checks if requestId has been fullfilled */
-        // assert(
-        //   fetchedEvents.some(
-        //     (req) =>
-        //       req.type == 'fullfilled' 
-        //       // && (requestId.assertEquals(req.event.data.toFields(null)[0]) == undefined
-        //       //   ? true
-        //       //   : false) 
-        //         // && requestId === req.event.data.toFields(null)[0]
-        //         // && requestId.equals(req.event.data.toFields(null)[0])
-        //   ),
-        //   'RequestId already fullfilled'
-        // );
         const isValid = await ZkonZkProgram.verify(proof);
         assert(isValid);
         this.emitEvent('fullfilled', requestId);
@@ -133,12 +116,6 @@ __decorate([
     state(UInt64),
     __metadata("design:type", Object)
 ], ZkonRequestCoordinator.prototype, "requestCount", void 0);
-__decorate([
-    method,
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", [PublicKey, PublicKey, UInt64, PublicKey]),
-    __metadata("design:returntype", Promise)
-], ZkonRequestCoordinator.prototype, "initState", null);
 __decorate([
     method,
     __metadata("design:type", Function),

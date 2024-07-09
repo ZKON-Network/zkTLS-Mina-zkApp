@@ -1,5 +1,11 @@
-import { Field, SmartContract, State, PublicKey, UInt64, Proof } from 'o1js';
+import { Field, SmartContract, State, PublicKey, UInt64, Proof, DeployArgs } from 'o1js';
 import { Commitments } from './zkProgram';
+export interface CoordinatorDeployProps extends Exclude<DeployArgs, undefined> {
+    oracle: PublicKey;
+    zkonToken: PublicKey;
+    treasury: PublicKey;
+    feePrice: UInt64;
+}
 declare const RequestEvent_base: (new (value: {
     id: import("o1js/dist/node/lib/provable/field").Field;
     hash1: import("o1js/dist/node/lib/provable/field").Field;
@@ -94,6 +100,74 @@ declare const RequestEvent_base: (new (value: {
 };
 declare class RequestEvent extends RequestEvent_base {
 }
+declare const ExternalRequestEvent_base: (new (value: {
+    id: import("o1js/dist/node/lib/provable/field").Field;
+    hash1: import("o1js/dist/node/lib/provable/field").Field;
+    hash2: import("o1js/dist/node/lib/provable/field").Field;
+}) => {
+    id: import("o1js/dist/node/lib/provable/field").Field;
+    hash1: import("o1js/dist/node/lib/provable/field").Field;
+    hash2: import("o1js/dist/node/lib/provable/field").Field;
+}) & {
+    _isStruct: true;
+} & Omit<import("o1js/dist/node/lib/provable/types/provable-intf").Provable<{
+    id: import("o1js/dist/node/lib/provable/field").Field;
+    hash1: import("o1js/dist/node/lib/provable/field").Field;
+    hash2: import("o1js/dist/node/lib/provable/field").Field;
+}, {
+    id: bigint;
+    hash1: bigint;
+    hash2: bigint;
+}>, "fromFields"> & {
+    fromFields: (fields: import("o1js/dist/node/lib/provable/field").Field[]) => {
+        id: import("o1js/dist/node/lib/provable/field").Field;
+        hash1: import("o1js/dist/node/lib/provable/field").Field;
+        hash2: import("o1js/dist/node/lib/provable/field").Field;
+    };
+} & {
+    fromValue: (value: {
+        id: string | number | bigint | import("o1js/dist/node/lib/provable/field").Field;
+        hash1: string | number | bigint | import("o1js/dist/node/lib/provable/field").Field;
+        hash2: string | number | bigint | import("o1js/dist/node/lib/provable/field").Field;
+    }) => {
+        id: import("o1js/dist/node/lib/provable/field").Field;
+        hash1: import("o1js/dist/node/lib/provable/field").Field;
+        hash2: import("o1js/dist/node/lib/provable/field").Field;
+    };
+    toInput: (x: {
+        id: import("o1js/dist/node/lib/provable/field").Field;
+        hash1: import("o1js/dist/node/lib/provable/field").Field;
+        hash2: import("o1js/dist/node/lib/provable/field").Field;
+    }) => {
+        fields?: import("o1js/dist/node/lib/provable/field").Field[] | undefined;
+        packed?: [import("o1js/dist/node/lib/provable/field").Field, number][] | undefined;
+    };
+    toJSON: (x: {
+        id: import("o1js/dist/node/lib/provable/field").Field;
+        hash1: import("o1js/dist/node/lib/provable/field").Field;
+        hash2: import("o1js/dist/node/lib/provable/field").Field;
+    }) => {
+        id: string;
+        hash1: string;
+        hash2: string;
+    };
+    fromJSON: (x: {
+        id: string;
+        hash1: string;
+        hash2: string;
+    }) => {
+        id: import("o1js/dist/node/lib/provable/field").Field;
+        hash1: import("o1js/dist/node/lib/provable/field").Field;
+        hash2: import("o1js/dist/node/lib/provable/field").Field;
+    };
+    empty: () => {
+        id: import("o1js/dist/node/lib/provable/field").Field;
+        hash1: import("o1js/dist/node/lib/provable/field").Field;
+        hash2: import("o1js/dist/node/lib/provable/field").Field;
+    };
+};
+export declare class ExternalRequestEvent extends ExternalRequestEvent_base {
+}
 declare const RequestPaidEvent_base: (new (value: {
     zkApp: PublicKey;
     requestsPaid: import("o1js/dist/node/lib/provable/field").Field;
@@ -174,7 +248,7 @@ export declare class ZkonRequestCoordinator extends SmartContract {
     treasury: State<PublicKey>;
     feePrice: State<UInt64>;
     requestCount: State<UInt64>;
-    initState(treasury: PublicKey, zkTokenAddress: PublicKey, feePrice: UInt64, oracle: PublicKey): Promise<void>;
+    deploy(props: CoordinatorDeployProps): Promise<void>;
     setFeePrice(feePrice: UInt64): Promise<void>;
     setTreasury(treasury: PublicKey): Promise<void>;
     events: {

@@ -49,7 +49,12 @@ describe('Zkon Request Example', () => {
                 symbol: "ZKON",
                 src: ""
             });
-            await coordinator.deploy();
+            await coordinator.deploy({
+                oracle: oracleAddress,
+                zkonToken: zktAddress,
+                treasury: treasuryAddress,
+                feePrice: feePrice
+            });
             await zkRequest.deploy({
                 coordinator: zkCoordinatorAddress
             });
@@ -66,20 +71,11 @@ describe('Zkon Request Example', () => {
         ])
             .send();
     }
-    async function initCoordinatorState() {
-        const txn = await Mina.transaction(deployerAccount, async () => {
-            await coordinator.initState(treasuryAddress, zktAddress, feePrice, oracleAddress);
-        });
-        await txn.prove();
-        await txn.sign([deployerKey]).send();
-    }
     it('Deploy & init coordinator', async () => {
         await localDeploy();
-        await initCoordinatorState();
     });
     it('Prepay 2 requests', async () => {
         await localDeploy();
-        await initCoordinatorState();
         const coordinatorInitiated = zkRequest.coordinator.get();
         expect(coordinatorInitiated.equals(zkCoordinatorAddress));
         const initialSupply = new UInt64(1000);
@@ -109,7 +105,6 @@ describe('Zkon Request Example', () => {
     });
     it('Send request via example zkApp', async () => {
         await localDeploy();
-        await initCoordinatorState();
         const initialSupply = new UInt64(1000);
         let tx = await Mina.transaction(deployerAccount, async () => {
             AccountUpdate.fundNewAccount(deployerAccount);

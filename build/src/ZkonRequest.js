@@ -8,12 +8,15 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { SmartContract, PublicKey, state, State, method, Field, Proof } from 'o1js';
-import { ZkonRequestCoordinator } from './ZkonRequestCoordinator.js';
+import { ZkonRequestCoordinator, ExternalRequestEvent } from './ZkonRequestCoordinator.js';
 export class ZkonRequest extends SmartContract {
     constructor() {
         super(...arguments);
         this.coordinator = State();
         this.coinValue = State(); //Value of the coin returned by the oracle
+        this.events = {
+            requested: ExternalRequestEvent
+        };
     }
     async deploy(props) {
         await super.deploy(props);
@@ -27,7 +30,15 @@ export class ZkonRequest extends SmartContract {
     async sendRequest(hashPart1, hashPart2) {
         const coordinatorAddress = this.coordinator.getAndRequireEquals();
         const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
-        return coordinator.sendRequest(this.address, hashPart1, hashPart2);
+        const requestId = await coordinator.sendRequest(this.address, hashPart1, hashPart2);
+        const sender = this.address.toFields();
+        const event = new ExternalRequestEvent({
+            id: requestId,
+            hash1: hashPart1,
+            hash2: hashPart2,
+        });
+        this.emitEvent('requested', event);
+        return requestId;
     }
     /**
      * @notice Validates the request

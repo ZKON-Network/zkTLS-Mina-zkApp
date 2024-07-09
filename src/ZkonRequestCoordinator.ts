@@ -1,6 +1,13 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof, DeployArgs } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { Commitments, ZkonZkProgram } from './zkProgram';
+
+export interface CoordinatorDeployProps extends Exclude<DeployArgs, undefined> {
+  oracle : PublicKey
+  zkonToken : PublicKey
+  treasury : PublicKey
+  feePrice : UInt64  
+}
 
 class RequestEvent extends Struct ({
   id: Field,
@@ -29,13 +36,12 @@ export class ZkonRequestCoordinator extends SmartContract {
   @state(UInt64) feePrice = State<UInt64>();
   @state(UInt64) requestCount = State<UInt64>();
 
-  @method
-  async initState(treasury: PublicKey, zkTokenAddress: PublicKey, feePrice: UInt64, oracle: PublicKey) {
-    super.init();
-    this.feePrice.set(feePrice);
-    this.treasury.set(treasury);
-    this.zkonToken.set(zkTokenAddress);
-    this.oracle.set(oracle);
+  async deploy(props: CoordinatorDeployProps) {
+    await super.deploy(props);
+    this.oracle.set(props.oracle);
+    this.zkonToken.set(props.zkonToken);
+    this.treasury.set(props.treasury);
+    this.feePrice.set(props.feePrice);
     this.requestCount.set(new UInt64(1));
   }
 

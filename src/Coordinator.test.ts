@@ -92,7 +92,12 @@ describe('Zkon Token Tests', () => {
           src: '',
           decimals: UInt8.from(9),
         });
-        await coordinator.deploy();
+        await coordinator.deploy({
+          oracle: oracleAddress,
+          zkonToken: zktAddress,
+          treasury: treasuryAddress,
+          feePrice: feePrice
+        });
       }
     );
     // this tx needs .sign(), because `deploy()` adds an account update that requires signature authorization
@@ -103,34 +108,12 @@ describe('Zkon Token Tests', () => {
     ).send();
   }
 
-  async function initCoordinatorState() {
-    const txn = await Mina.transaction(
-      {
-        sender: deployerAccount,
-        fee: 1e8,
-      },
-      async () => {
-        await coordinator.initState(
-          treasuryAddress,
-          zktAddress,
-          feePrice,
-          oracleAddress
-        );
-      }
-    );
-    txn.sign([deployerKey]);
-    await txn.prove();
-    await txn.send();
-  }
-
   it('Deploy & init coordinator', async () => {
     await localDeploy();
-    await initCoordinatorState();
   });
 
   it('Send request', async () => {
     await localDeploy();
-    await initCoordinatorState();
 
     const initialSupply = new UInt64(1000);
 
@@ -208,7 +191,6 @@ describe('Zkon Token Tests', () => {
 
   // it('Fullfill request', async () => {
   //   await localDeploy();
-  //   await initCoordinatorState();
 
     // let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
     // expect(requesterBalance).toEqual(initialSupply.toString());
