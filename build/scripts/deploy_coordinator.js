@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 dotenv.config();
-import { Mina, PrivateKey, fetchAccount, Lightnet, AccountUpdate, PublicKey } from 'o1js';
+import { Mina, PrivateKey, fetchAccount, Lightnet, AccountUpdate, PublicKey, UInt64 } from 'o1js';
 import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
 import { ZkonZkProgram } from '../build/src/zkProgram.js';
 import fs from 'fs-extra';
@@ -16,7 +16,7 @@ const network = Mina.Network({
         ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
 });
 Mina.setActiveInstance(network);
-let senderKey, sender, localData, oracleAddress, oracleKey, treasuryAddress, tokenAddress, zkCoordinatorAddress;
+let senderKey, sender, localData, oracleAddress, oracleKey, treasuryAddress, tokenAddress;
 // Fee payer setup
 if (useCustomLocalNetwork) {
     localData = fs.readJsonSync('./data/addresses.json');
@@ -38,6 +38,8 @@ if (useCustomLocalNetwork) {
         senderKey = (await Lightnet.acquireKeyPair()).privateKey;
         sender = senderKey.toPublicKey();
     }
+    oracleKey = PrivateKey.random();
+    oracleAddress = oracleKey.toPublicKey();
 }
 else {
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
@@ -64,14 +66,14 @@ const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
 const feePrice = new UInt64(100);
 console.log('');
 // zkApps deployment
-console.log(`Init coordinator state.`);
+console.log(`Deploy coordinator...`);
 let transaction = await Mina.transaction({ sender, fee: transactionFee }, async () => {
     AccountUpdate.fundNewAccount(sender);
     await coordinator.deploy({
         oracle: oracleAddress,
-        tokenAddress: tokenAddress,
+        zkonToken: tokenAddress,
         feePrice: feePrice,
-        treasuryAddress: sender
+        treasury: sender
     });
 });
 console.log('Signing');
@@ -83,7 +85,7 @@ console.log('Sending the transaction.');
 console.log('');
 let pendingTx = await transaction.send();
 if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy zkCoordinator transaction sent. Deploying to ${coordinatorAddress.toBase58()}  
+    console.log(`Success! Deploy zkRequestCoordinator transaction sent. Deploying to ${coordinatorAddress.toBase58()}  
     Txn hash: ${pendingTx.hash}
     Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
 }
@@ -97,12 +99,14 @@ if (useCustomLocalNetwork) {
     fs.outputJsonSync("./data/addresses.json", localData, { spaces: 2 });
 }
 else {
-    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
-    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
-    localData.coordinatorKey = coordinatorKey.toBase58();
-    localData.coordinatorAddress = coordinatorAddress.toBase58();
-    localData.oracleKey = oracleKey.toBase58();
-    localData.oracleAddress = oracleAddress.toBase58();
+    const localData = {
+        deployerKey: senderKey.toBase58(),
+        deployerAddress: sender,
+        coordinatorKey: coordinatorKey.toBase58(),
+        coordinatorAddress: coordinatorAddress.toBase58(),
+        oracleKey: oracleKey.toBase58(),
+        oracleAddress: oracleAddress.toBase58(),
+    };
     fs.outputJsonSync("./data/devnet/addresses.json", localData, { spaces: 2 });
 }
 console.log('');

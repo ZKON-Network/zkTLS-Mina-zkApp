@@ -7,6 +7,7 @@ import {
     AccountUpdate,
     Lightnet,
     PublicKey,
+    Proof,
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
@@ -48,12 +49,13 @@ import fs from 'fs-extra';
       await fetchAccount({ publicKey: sender })
     } catch (error) {
       senderKey = (await Lightnet.acquireKeyPair()).privateKey
-      sender = senderKey.toPublicKey();
+      sender = senderKey.toPublicKey();      
     }
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
 
+    zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
   }
   
   console.log(`Fetching the fee payer account information.`);
@@ -64,7 +66,7 @@ import fs from 'fs-extra';
     } and balance: ${accountDetails?.balance}.`
     );  
     
-  // ZkRequest App  
+  // ZkRequest App   
   const zkRequestKey = PrivateKey.random();
   const zkRequestAddress = zkRequestKey.toPublicKey();
   await ZkonRequest.compile();
@@ -73,7 +75,7 @@ import fs from 'fs-extra';
   console.log('');
   
   // zkApps deployment
-  console.log(`Deploy zkRequest to ${zkRequestAddress.toBase58()}`);  
+  console.log(`Deploy zkRequest to ${zkRequestAddress.toBase58()}, with coordinator ${zkCoordinatorAddress.toBase58()} as parameter`);  
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {
@@ -113,19 +115,3 @@ import fs from 'fs-extra';
     );
   }
   console.log('');
-
-  // zkApps deployment
-  console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
-  console.log('Fetching zkAppAccount...');
-  const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
-  
-  if (accountInfo.account.zkapp) {
-    const zkAppState = accountInfo.account.zkapp;
-    const field1 =  zkAppState.appState[0];
-    const field2 =  zkAppState.appState[1];
-    console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
-    console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
-  } else {
-    console.log('No zkApp found for the given public key.');
-  }
-  console.log('zkAppAccount fetched');

@@ -32,8 +32,7 @@ import fs from 'fs-extra';
       oracleAddress,
       oracleKey,
       treasuryAddress,
-      tokenAddress,
-      zkCoordinatorAddress  
+      tokenAddress
   
   // Fee payer setup
   if (useCustomLocalNetwork){
@@ -92,11 +91,7 @@ import fs from 'fs-extra';
   console.log('');
 
   // zkApps deployment
-  console.log(`Init coordinator state.`);
-  console.log('Oracle: ',oracleAddress.toBase58())
-  console.log('Token: ',tokenAddress.toBase58())
-  console.log('Fee: ',feePrice.toString())
-  console.log('Treasury: ',treasuryAddress.toBase58())
+  console.log(`Deploy coordinator...`);  
 
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
@@ -104,9 +99,9 @@ import fs from 'fs-extra';
       AccountUpdate.fundNewAccount(sender)
       await coordinator.deploy({
         oracle: oracleAddress,
-        tokenAddress: tokenAddress,
+        zkonToken: tokenAddress,
         feePrice: feePrice,
-        treasuryAddress: sender
+        treasury: sender
       });
     }
   );
@@ -119,7 +114,7 @@ import fs from 'fs-extra';
   console.log('');
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy zkCoordinator transaction sent. Deploying to ${coordinatorAddress.toBase58()}  
+    console.log(`Success! Deploy zkRequestCoordinator transaction sent. Deploying to ${coordinatorAddress.toBase58()}  
     Txn hash: ${pendingTx.hash}
     Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
   }
@@ -136,12 +131,14 @@ import fs from 'fs-extra';
       { spaces: 2 }
     );
   }else{
-    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
-    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
-    localData.coordinatorKey = coordinatorKey.toBase58();
-    localData.coordinatorAddress = coordinatorAddress.toBase58();
-    localData.oracleKey = oracleKey.toBase58();
-    localData.oracleAddress = oracleAddress.toBase58();
+    const localData = {
+      deployerKey : senderKey.toBase58(),
+      deployerAddress : sender,
+      coordinatorKey : coordinatorKey.toBase58(),
+      coordinatorAddress : coordinatorAddress.toBase58(),
+      oracleKey : oracleKey.toBase58(),
+      oracleAddress : oracleAddress.toBase58(),
+    }
     fs.outputJsonSync(
       "./data/devnet/addresses.json",            
         localData,      
