@@ -68,8 +68,8 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     } and balance: ${accountDetails?.balance}.`
     );  
     
+    await ZkonZkProgram.compile();
   // ZkRequest App   
-  await ZkonZkProgram.compile();
   const zkRequestKey = PrivateKey.random();
   const zkRequestAddress = zkRequestKey.toPublicKey();
   await ZkonRequest.compile();

@@ -21,7 +21,6 @@ const checkECDSA =(message:string, signature:string): Bool=>{
 const ZkonZkProgram = ZkProgram({
   name:'zkonProof',
   publicInput: Field,
-
   methods:{
     verifySource:{
       privateInputs: [Field, P256Data], 
