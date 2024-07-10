@@ -14,7 +14,7 @@ const checkECDSA = (message, signature) => {
     return new Bool(result);
 };
 const ZkonZkProgram = ZkProgram({
-    name: 'egrains-proof',
+    name: 'zkonProof',
     publicInput: Field,
     methods: {
         verifySource: {

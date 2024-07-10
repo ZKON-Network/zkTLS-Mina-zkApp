@@ -8,9 +8,11 @@ import {
     Lightnet,
     PublicKey,
     Proof,
+    ZkProgram,
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
+import { ZkonZkProgram } from '../build/src/zkProgram.js';
     
   // Network configuration
   const transactionFee = 100_000_000;
@@ -67,6 +69,7 @@ import fs from 'fs-extra';
     );  
     
   // ZkRequest App   
+  await ZkonZkProgram.compile();
   const zkRequestKey = PrivateKey.random();
   const zkRequestAddress = zkRequestKey.toPublicKey();
   await ZkonRequest.compile();

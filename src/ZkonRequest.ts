@@ -55,6 +55,6 @@ export class ZkonRequest extends SmartContract {
     const coordinatorAddress = this.coordinator.getAndRequireEquals();
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     await coordinator.recordRequestFullfillment(requestId, proof);
-    this.coinValue.set(proof.publicInput);
+    // this.coinValue.set(proof.publicInput);
   }
 }
