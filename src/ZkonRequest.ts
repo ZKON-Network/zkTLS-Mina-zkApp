@@ -12,7 +12,7 @@ export class ZkonProof extends ZkonProof_ {}
 
 export class ZkonRequest extends SmartContract {
   @state(PublicKey) coordinator = State<PublicKey>();
-  @state(PublicKey) coinValue = State<Field>(); //Value of the coin returned by the oracle
+  @state(Field) coinValue = State<Field>(); //Value of the coin returned by the oracle
 
   async deploy(props: AppDeployProps) {
     await super.deploy(props);

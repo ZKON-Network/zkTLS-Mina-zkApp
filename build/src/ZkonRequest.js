@@ -59,7 +59,7 @@ __decorate([
     __metadata("design:type", Object)
 ], ZkonRequest.prototype, "coordinator", void 0);
 __decorate([
-    state(PublicKey),
+    state(Field),
     __metadata("design:type", Object)
 ], ZkonRequest.prototype, "coinValue", void 0);
 __decorate([
