@@ -30,8 +30,7 @@ import fs from 'fs-extra';
       sender,
       localData,
       oracleAddress,
-      oracleKey,
-      treasuryAddress,
+      oracleKey,      
       tokenAddress
   
   // Fee payer setup
@@ -54,6 +53,7 @@ import fs from 'fs-extra';
       sender = senderKey.toPublicKey();
     }
 
+    tokenAddress = PrivateKey.random().toPublicKey();
     oracleKey = PrivateKey.random();
     oracleAddress = oracleKey.toPublicKey();
   }else{
@@ -63,10 +63,6 @@ import fs from 'fs-extra';
     tokenAddress = process.env.TOKEN_ADDRESS ?
     PublicKey.fromBase58(process.env.TOKEN_ADDRESS) : 
       PublicKey.fromBase58('B62qrqYtrQLQyudxG38HkLZ4GFB2Zy1z64DjqQaD7yv3pwGBQQQfSZ3');
-    
-    treasuryAddress = process.env.TREASURY_ADDRESS ? 
-      PublicKey.fromBase58(process.env.TREASURY_ADDRESS) : 
-      PublicKey.fromBase58('B62qkaxsQG86VQRsHPqZBQe8Pfwj7TXH3dm7domVe44gL7EdMToetzd');
 
     oracleKey = PrivateKey.random();
     oracleAddress = oracleKey.toPublicKey();
@@ -101,7 +97,7 @@ import fs from 'fs-extra';
         oracle: oracleAddress,
         zkonToken: tokenAddress,
         feePrice: feePrice,
-        treasury: sender
+        owner: sender
       });
     }
   );

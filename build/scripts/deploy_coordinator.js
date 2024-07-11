@@ -16,7 +16,7 @@ const network = Mina.Network({
         ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
 });
 Mina.setActiveInstance(network);
-let senderKey, sender, localData, oracleAddress, oracleKey, treasuryAddress, tokenAddress;
+let senderKey, sender, localData, oracleAddress, oracleKey, tokenAddress;
 // Fee payer setup
 if (useCustomLocalNetwork) {
     localData = fs.readJsonSync('./data/addresses.json');
@@ -47,9 +47,6 @@ else {
     tokenAddress = process.env.TOKEN_ADDRESS ?
         PublicKey.fromBase58(process.env.TOKEN_ADDRESS) :
         PublicKey.fromBase58('B62qrqYtrQLQyudxG38HkLZ4GFB2Zy1z64DjqQaD7yv3pwGBQQQfSZ3');
-    treasuryAddress = process.env.TREASURY_ADDRESS ?
-        PublicKey.fromBase58(process.env.TREASURY_ADDRESS) :
-        PublicKey.fromBase58('B62qkaxsQG86VQRsHPqZBQe8Pfwj7TXH3dm7domVe44gL7EdMToetzd');
     oracleKey = PrivateKey.random();
     oracleAddress = oracleKey.toPublicKey();
 }
@@ -73,7 +70,7 @@ let transaction = await Mina.transaction({ sender, fee: transactionFee }, async 
         oracle: oracleAddress,
         zkonToken: tokenAddress,
         feePrice: feePrice,
-        treasury: sender
+        owner: sender
     });
 });
 console.log('Signing');

@@ -86,7 +86,7 @@ describe('Zkon Request Example', () => {
       await coordinator.deploy({
         oracle: oracleAddress,
         zkonToken: zktAddress,
-        treasury: treasuryAddress,
+        owner: deployerAccount,
         feePrice: feePrice
       });
       await zkRequest.deploy({

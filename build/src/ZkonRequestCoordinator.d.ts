@@ -2,7 +2,7 @@ import { Field, SmartContract, State, PublicKey, UInt64, Proof, DeployArgs } fro
 export interface CoordinatorDeployProps extends Exclude<DeployArgs, undefined> {
     oracle: PublicKey;
     zkonToken: PublicKey;
-    treasury: PublicKey;
+    owner: PublicKey;
     feePrice: UInt64;
 }
 declare const RequestEvent_base: (new (value: {
@@ -283,12 +283,14 @@ export declare class ZkonProof extends ZkonProof_ {
 export declare class ZkonRequestCoordinator extends SmartContract {
     oracle: State<PublicKey>;
     zkonToken: State<PublicKey>;
-    treasury: State<PublicKey>;
+    owner: State<PublicKey>;
     feePrice: State<UInt64>;
     requestCount: State<UInt64>;
     deploy(props: CoordinatorDeployProps): Promise<void>;
+    onlyOwner(): void;
     setFeePrice(feePrice: UInt64): Promise<void>;
-    setTreasury(treasury: PublicKey): Promise<void>;
+    setOwner(owner: PublicKey): Promise<void>;
+    setToken(zkonToken: PublicKey): Promise<void>;
     events: {
         requested: typeof RequestEvent;
         fullfilled: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);

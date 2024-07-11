@@ -14,6 +14,7 @@ import { FungibleToken, FungibleTokenAdmin } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator.js';
 import { StringCircuitValue } from './String.js';
 
+
 let proofsEnabled = false;
 
 describe('Zkon Token Tests', () => {
@@ -33,6 +34,8 @@ describe('Zkon Token Tests', () => {
     treasuryPrivateKey: PrivateKey,
     oracleAddress: PublicKey,
     oracleKey: PrivateKey,
+    randomUserAddress: PublicKey,
+    randomUserKey: PrivateKey,
     ipfsHash: string,
     tokenAdmin: Mina.TestPublicKey,
     tokenAdminContract: FungibleTokenAdmin;
@@ -51,6 +54,8 @@ describe('Zkon Token Tests', () => {
       tokenAdmin = Local.testAccounts[2];
       oracleKey = Local.testAccounts[3].key;
       oracleAddress = Local.testAccounts[3];
+      randomUserKey = Local.testAccounts[4].key;
+      randomUserAddress = Local.testAccounts[4];
       zktPrivateKey = PrivateKey.random();
       zktAddress = zktPrivateKey.toPublicKey();
       token = new FungibleToken(zktAddress);
@@ -66,7 +71,7 @@ describe('Zkon Token Tests', () => {
       // oracleKey = PrivateKey.random();
       // oracleAddress = oracleKey.toPublicKey();
 
-      feePrice = new UInt64(100);
+      feePrice = new UInt64(10000);
 
       tokenAdminContract = new FungibleTokenAdmin(tokenAdmin);
 
@@ -95,7 +100,7 @@ describe('Zkon Token Tests', () => {
         await coordinator.deploy({
           oracle: oracleAddress,
           zkonToken: zktAddress,
-          treasury: treasuryAddress,
+          owner: deployerAccount,
           feePrice: feePrice
         });
       }
@@ -171,82 +176,156 @@ describe('Zkon Token Tests', () => {
 
     await fetchAccount({publicKey: oracleAddress});
     console.log("Oracle Address: ", oracleAddress.toBase58())
-    /*const fullfillTxn = await Mina.transaction(
-      {
-        sender: oracleAddress,
-        fee: 1e8,
-      },
-      async () => {
-        await coordinator.recordRequestFullfillment(expectedRequestId);
-      }
-    );
-    await fullfillTxn.prove();
-    await (await fullfillTxn.sign([oracleKey]).send()).wait;
-
-    const newEvents = await coordinator.fetchEvents();
-    console.log(newEvents)
-    expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
-*/
-  });
-
-  // it('Fullfill request', async () => {
-  //   await localDeploy();
-
-    // let requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
-    // expect(requesterBalance).toEqual(initialSupply.toString());
-
-    // const ipfsHashSegmented0 = segmentHash(ipfsHash);
-
-    // const txn = await Mina.transaction(
+    // const fullfillTxn = await Mina.transaction(
     //   {
-    //     sender: requesterAccount,
+    //     sender: oracleAddress,
     //     fee: 1e8,
     //   },
     //   async () => {
-    //     await coordinator.sendRequest(
-    //       deployerAccount,
-    //       ipfsHashSegmented0.field1,
-    //       ipfsHashSegmented0.field2
-    //     );
+    //     await coordinator.recordRequestFullfillment(expectedRequestId);
     //   }
     // );
-    // txn.sign([requesterKey, deployerKey]);
-    // await txn.prove();
-    // await txn.send();
-
-    // requesterBalance = await Mina.getBalance(requesterAccount,tokenId).value.toString();
-    // expect(requesterBalance).toEqual((new UInt64(initialSupply).sub(feePrice)).toString());
-
-    // let treasuryBalance = await Mina.getBalance(treasuryAddress,tokenId).value.toString();
-    // expect(treasuryBalance).toEqual(feePrice.toString());
-
-    // const events = await coordinator.fetchEvents();
-    // expect(events[0].type).toEqual('requested');
-    // const requestEvent = provablePure(events[0].event.data).toFields(
-    //   events[0].event.data
-    // );
-    // const expectedRequestId = Poseidon.hash([
-    //   Field(1),
-    //   deployerAccount.toFields()[0],
-    // ]);
-    // expect(requestEvent[0]).toEqual(expectedRequestId);
-    // expect(requestEvent[1]).toEqual(ipfsHashSegmented0.field1);
-    // expect(requestEvent[2]).toEqual(ipfsHashSegmented0.field2);
-    // const dehashed = PublicKey.fromFields([requestEvent[3], requestEvent[4]]);
-    // expect(dehashed.toBase58()).toEqual(deployerAccount.toBase58());  
-
-
-    // const fullfillTxn = await Mina.transaction(requesterAccount, async () => {
-    //   await coordinator.recordRequestFullfillment(expectedRequestId);
-    // });
     // await fullfillTxn.prove();
-    // await (await fullfillTxn.sign([requesterKey]).send()).wait;
+    // await (await fullfillTxn.sign([oracleKey]).send()).wait;
 
     // const newEvents = await coordinator.fetchEvents();
     // console.log(newEvents)
     // expect(newEvents.some((e) => e.type === 'fullfilled')).toEqual(true);
 
-  // });
+  });
+
+  it('Set fees', async () => {
+    await localDeploy();    
+    let tx = await Mina.transaction(
+      {
+        sender: deployerAccount,
+        fee: 1e8,
+      },
+      async () => {        
+        await coordinator.setFeePrice(new UInt64(100));
+      }
+    );
+    tx.sign([deployerKey]);
+    await tx.prove();
+    await tx.send();
+
+    let fees = await coordinator.feePrice.get();
+    expect(fees).toEqual(new UInt64(100))
+
+    let secondTx = await Mina.transaction(
+      {
+        sender: deployerAccount,
+        fee: 1e8,
+      },
+      async () => {        
+        await coordinator.setFeePrice(new UInt64(200));
+      }
+    );
+    secondTx.sign([deployerKey]);
+    await secondTx.prove();
+    await secondTx.send();
+
+    fees = await coordinator.feePrice.get();
+    expect(fees).toEqual(new UInt64(200))
+
+    try {
+      let failedTx = await Mina.transaction(
+        {
+          sender: randomUserAddress,
+          fee: 1e8,
+        },
+        async () => {        
+          await coordinator.setFeePrice(new UInt64(100));
+        }
+      );
+      failedTx.sign([randomUserKey]);
+      await failedTx.prove();
+      await failedTx.send();
+      
+    } catch (error) {
+      console.log("Transaction failed as expected");
+      fees = await coordinator.feePrice.get();
+      expect(fees).toEqual(new UInt64(200))
+    }
+  });
+
+  it('Set owner', async () => {
+    await localDeploy();
+    await fetchAccount({ publicKey: zkCoordinatorAddress });
+    const initialOwner = await coordinator.owner.get();
+    console.log('Initial owner: ', initialOwner.toBase58());
+    try {
+      //Can't change owner if not current owner
+      let tx = await Mina.transaction(
+        {
+          sender: randomUserAddress,
+          fee: 1e8,
+        },
+        async () => {
+          await coordinator.setOwner(deployerAccount);
+        }
+      );
+      tx.sign([randomUserKey]);
+      await tx.prove();
+      await tx.send();
+    } catch (error) {
+      //Set new owner (randomUser) by current owner (deployer)
+      let tx = await Mina.transaction(
+        {
+          sender: deployerAccount,
+          fee: 1e8,
+        },
+        async () => {
+          await coordinator.setOwner(randomUserAddress);
+        }
+      );
+      tx.sign([deployerKey]);
+      await tx.prove();
+      await tx.send();
+    }
+
+    const finalOwner = await coordinator.owner.get();
+    console.log('Final owner: ', finalOwner.toBase58());
+    expect(finalOwner.toBase58()).toEqual(randomUserAddress.toBase58())
+  });
+
+  it('Set token', async () => {
+    await localDeploy();
+    await fetchAccount({ publicKey: zkCoordinatorAddress });
+    const newToken = PrivateKey.random().toPublicKey();
+    try {
+      //Can't change token if not current owner
+      let tx = await Mina.transaction(
+        {
+          sender: randomUserAddress,
+          fee: 1e8,
+        },
+        async () => {
+          await coordinator.setToken(newToken);
+        }
+      );
+      tx.sign([randomUserKey]);
+      await tx.prove();
+      await tx.send();
+    } catch (error) {
+      //Set new token address by current owner (deployer)
+      let tx = await Mina.transaction(
+        {
+          sender: deployerAccount,
+          fee: 1e8,
+        },
+        async () => {
+          await coordinator.setToken(newToken);
+        }
+      );
+      tx.sign([deployerKey]);
+      await tx.prove();
+      await tx.send();
+    }
+
+    const finalToken = await coordinator.zkonToken.get();
+    expect(finalToken.toBase58()).toEqual(newToken.toBase58());
+  });
 
   function segmentHash(ipfsHashFile: string) {
     const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash

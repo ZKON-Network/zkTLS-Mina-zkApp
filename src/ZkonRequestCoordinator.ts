@@ -5,7 +5,7 @@ import { ZkonZkProgram } from './zkProgram.js';
 export interface CoordinatorDeployProps extends Exclude<DeployArgs, undefined> {
   oracle : PublicKey
   zkonToken : PublicKey
-  treasury : PublicKey
+  owner : PublicKey
   feePrice : UInt64
 }
 
@@ -35,7 +35,7 @@ export class ZkonProof extends ZkonProof_ {}
 export class ZkonRequestCoordinator extends SmartContract {
   @state(PublicKey) oracle = State<PublicKey>();
   @state(PublicKey) zkonToken = State<PublicKey>();
-  @state(PublicKey) treasury = State<PublicKey>();
+  @state(PublicKey) owner = State<PublicKey>();
   @state(UInt64) feePrice = State<UInt64>();
   @state(UInt64) requestCount = State<UInt64>();
 
@@ -43,19 +43,32 @@ export class ZkonRequestCoordinator extends SmartContract {
     await super.deploy(props);
     this.oracle.set(props.oracle);
     this.zkonToken.set(props.zkonToken);
-    this.treasury.set(props.treasury);
+    this.owner.set(props.owner);
     this.feePrice.set(props.feePrice);
     this.requestCount.set(new UInt64(1));
   }
 
+  onlyOwner() {
+    const currentOwner = this.owner.getAndRequireEquals();
+    currentOwner.assertEquals(this.sender.getAndRequireSignature()); // Verificamos que el remitente sea el propietario
+  }
+
   @method 
   async setFeePrice(feePrice: UInt64) {
+    this.onlyOwner();
     this.feePrice.set(feePrice);
   }
 
   @method 
-  async setTreasury(treasury: PublicKey) {
-    this.treasury.set(treasury);
+  async setOwner(owner: PublicKey) {
+    this.onlyOwner();
+    this.owner.set(owner);
+  }
+
+  @method 
+  async setToken(zkonToken: PublicKey) {
+    this.onlyOwner();
+    this.zkonToken.set(zkonToken);
   }
 
   events = {
@@ -95,7 +108,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     const feePrice = this.feePrice.getAndRequireEquals();
     const totalAmount = feePrice.mul(requestAmount);
 
-    await ZkToken.transfer(this.sender.getAndRequireSignature(), this.treasury.getAndRequireEquals(), totalAmount);
+    await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
     
     //Get the current timestamp
     const timestamp = this.self.network.timestamp

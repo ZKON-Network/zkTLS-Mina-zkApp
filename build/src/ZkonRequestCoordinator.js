@@ -38,7 +38,7 @@ export class ZkonRequestCoordinator extends SmartContract {
         super(...arguments);
         this.oracle = State();
         this.zkonToken = State();
-        this.treasury = State();
+        this.owner = State();
         this.feePrice = State();
         this.requestCount = State();
         this.events = {
@@ -51,15 +51,25 @@ export class ZkonRequestCoordinator extends SmartContract {
         await super.deploy(props);
         this.oracle.set(props.oracle);
         this.zkonToken.set(props.zkonToken);
-        this.treasury.set(props.treasury);
+        this.owner.set(props.owner);
         this.feePrice.set(props.feePrice);
         this.requestCount.set(new UInt64(1));
     }
+    onlyOwner() {
+        const currentOwner = this.owner.getAndRequireEquals();
+        currentOwner.assertEquals(this.sender.getAndRequireSignature()); // Verificamos que el remitente sea el propietario
+    }
     async setFeePrice(feePrice) {
+        this.onlyOwner();
         this.feePrice.set(feePrice);
     }
-    async setTreasury(treasury) {
-        this.treasury.set(treasury);
+    async setOwner(owner) {
+        this.onlyOwner();
+        this.owner.set(owner);
+    }
+    async setToken(zkonToken) {
+        this.onlyOwner();
+        this.zkonToken.set(zkonToken);
     }
     async sendRequest(requester, hash1, hash2) {
         const currentRequestCount = this.requestCount.getAndRequireEquals();
@@ -80,7 +90,7 @@ export class ZkonRequestCoordinator extends SmartContract {
         const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());
         const feePrice = this.feePrice.getAndRequireEquals();
         const totalAmount = feePrice.mul(requestAmount);
-        await ZkToken.transfer(this.sender.getAndRequireSignature(), this.treasury.getAndRequireEquals(), totalAmount);
+        await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
         //Get the current timestamp
         const timestamp = this.self.network.timestamp;
         const event = new RequestPaidEvent({
@@ -109,7 +119,7 @@ __decorate([
 __decorate([
     state(PublicKey),
     __metadata("design:type", Object)
-], ZkonRequestCoordinator.prototype, "treasury", void 0);
+], ZkonRequestCoordinator.prototype, "owner", void 0);
 __decorate([
     state(UInt64),
     __metadata("design:type", Object)
@@ -129,7 +139,13 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [PublicKey]),
     __metadata("design:returntype", Promise)
-], ZkonRequestCoordinator.prototype, "setTreasury", null);
+], ZkonRequestCoordinator.prototype, "setOwner", null);
+__decorate([
+    method,
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [PublicKey]),
+    __metadata("design:returntype", Promise)
+], ZkonRequestCoordinator.prototype, "setToken", null);
 __decorate([
     method.returns(Field),
     __metadata("design:type", Function),
