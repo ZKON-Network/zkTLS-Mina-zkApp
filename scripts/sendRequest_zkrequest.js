@@ -12,6 +12,7 @@ import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
 import { StringCircuitValue } from '../build/src/String.js';
 import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
+import { ZkonZkProgram } from '../build/src/zkProgram.js';
     
   // Network configuration
   const transactionFee = 100_000_000;
@@ -55,8 +56,12 @@ import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
       sender = senderKey.toPublicKey();
     }
   }else{
+    localData = fs.readJsonSync('./data/devnet/addresses.json');
+
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
+
+    zkRequestAddress = PublicKey.fromBase58(localData.zkRequest)
 
   }
   
@@ -68,9 +73,11 @@ import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
     } and balance: ${accountDetails?.balance}.`
     );
 
-  const ipfsHash = 'QmbCpnprEGiPZfESXkbXmcXcBEt96TZMpYAxsoEFQNxoEV'; //Mock JSON Request
+  const ipfsHash = 'QmZL2TptRp26w6J5bsyFzXzDuoL1diUPjS5XqVNkMF7Auw';
 
   const ipfsHashSegmented0 = segmentHash(ipfsHash);
+
+  await ZkonZkProgram.compile();
     
   await ZkonRequestCoordinator.compile();
   // ZkRequest App
@@ -120,21 +127,22 @@ import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
   }
   console.log('');
 
-  // zkApps deployment
-  console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
-  console.log('Fetching zkAppAccount...');
-  const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
-  
-  if (accountInfo.account.zkapp) {
-    const zkAppState = accountInfo.account.zkapp;
-    const field1 =  zkAppState.appState[0];
-    const field2 =  zkAppState.appState[1];
-    console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
-    console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
-  } else {
-    console.log('No zkApp found for the given public key.');
+  if (useCustomLocalNetwork){
+    console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
+    console.log('Fetching zkAppAccount...');
+    const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
+    
+    if (accountInfo.account.zkapp) {
+      const zkAppState = accountInfo.account.zkapp;
+      const field1 =  zkAppState.appState[0];
+      const field2 =  zkAppState.appState[1];
+      console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
+      console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
+    } else {
+      console.log('No zkApp found for the given public key.');
+    }
+    console.log('zkAppAccount fetched');
   }
-  console.log('zkAppAccount fetched');
 
   function segmentHash(ipfsHashFile) {
     const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
