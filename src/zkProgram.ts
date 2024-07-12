@@ -2,9 +2,16 @@ import { Mina, PublicKey, UInt32,Field,  ZkProgram, Bytes, Hash, state, Bool, ve
 import { p256, secp256r1 } from '@noble/curves/p256';
 import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
 
-export class P256Data extends Struct({
+//Only kept here for development purpose. Please read from zkon-zkapp repo in prod.
+
+class P256Data extends Struct({
   signature: String,
   messageHex: String
+}){}
+
+class PublicArgumets extends Struct({
+  commitment: Field,
+  dataField:Field
 }){}
 
 const checkECDSA =(message:string, signature:string): Bool=>{
@@ -19,19 +26,19 @@ const checkECDSA =(message:string, signature:string): Bool=>{
 }
 
 const ZkonZkProgram = ZkProgram({
-  name:'zkonProof',
-  publicInput: Field,
+  name:'egrains-proof',
+  publicInput: PublicArgumets,
+
   methods:{
     verifySource:{
       privateInputs: [Field, P256Data], 
       async method (
-        commitment: Field,
+        commitment: PublicArgumets,
         decommitment: Field,
         p256_data: P256Data
       ){
           //P256 Signature Verification
           const assert = Bool(true);
-          
           Provable.asProver(()=>{
             const checkECDSASignature = checkECDSA(p256_data.messageHex, p256_data.signature);
             assert.assertEquals(checkECDSASignature);
@@ -39,10 +46,10 @@ const ZkonZkProgram = ZkProgram({
           
           // Check if the SH256 Hash commitment of the data-source is same 
           // as the response reconstructed from the notary-proof file.
-          decommitment.assertEquals(commitment);
+          decommitment.assertEquals(commitment.commitment);
       }
     }
   }
 });
 
-export {ZkonZkProgram};
+export {ZkonZkProgram, P256Data, PublicArgumets};
