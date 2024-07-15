@@ -1,4 +1,4 @@
-import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, Proof, ZkProgram } from 'o1js';
+import { SmartContract, PublicKey, state, State, method, Field, DeployArgs, ZkProgram } from 'o1js';
 import {ZkonRequestCoordinator, ExternalRequestEvent} from './ZkonRequestCoordinator.js';
 import { ZkonZkProgram } from './zkProgram.js';
 
@@ -34,7 +34,6 @@ export class ZkonRequest extends SmartContract {
     const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
     
     const requestId = await coordinator.sendRequest(this.address, hashPart1, hashPart2);
-    const sender = this.address.toFields();
 
     const event = new ExternalRequestEvent({
       id: requestId,
