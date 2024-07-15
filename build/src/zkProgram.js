@@ -1,9 +1,14 @@
 import { Field, ZkProgram, Bool, Struct, Provable } from 'o1js';
 import { p256 } from '@noble/curves/p256';
 import { hexToBytes } from '@noble/hashes/utils';
-export class P256Data extends Struct({
+class P256Data extends Struct({
     signature: String,
     messageHex: String
+}) {
+}
+class PublicArgumets extends Struct({
+    commitment: Field,
+    dataField: Field
 }) {
 }
 const checkECDSA = (message, signature) => {
@@ -15,7 +20,7 @@ const checkECDSA = (message, signature) => {
 };
 const ZkonZkProgram = ZkProgram({
     name: 'zkonProof',
-    publicInput: Field,
+    publicInput: PublicArgumets,
     methods: {
         verifySource: {
             privateInputs: [Field, P256Data],
@@ -27,11 +32,11 @@ const ZkonZkProgram = ZkProgram({
                     assert.assertEquals(checkECDSASignature);
                 });
                 // Check if the SH256 Hash commitment of the data-source is same 
-                // as the response reconstructed from the notary-proof file.
-                decommitment.assertEquals(commitment);
+                // as the response reconstructed from the MPC-Proof. 
+                decommitment.assertEquals(commitment.commitment);
             }
         }
     }
 });
-export { ZkonZkProgram };
+export { ZkonZkProgram, P256Data, PublicArgumets };
 //# sourceMappingURL=zkProgram.js.map

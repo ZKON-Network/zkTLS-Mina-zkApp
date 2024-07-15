@@ -244,24 +244,24 @@ declare class RequestPaidEvent extends RequestPaidEvent_base {
 export declare let ZkonProof_: {
     new ({ proof, publicInput, publicOutput, maxProofsVerified, }: {
         proof: unknown;
-        publicInput: import("o1js/dist/node/lib/provable/field.js").Field;
+        publicInput: import("./zkProgram.js").PublicArgumets;
         publicOutput: void;
         maxProofsVerified: 0 | 1 | 2;
     }): {
         verify(): void;
         verifyIf(condition: import("o1js/dist/node/lib/provable/bool.js").Bool): void;
-        publicInput: import("o1js/dist/node/lib/provable/field.js").Field;
+        publicInput: import("./zkProgram.js").PublicArgumets;
         publicOutput: void;
         proof: unknown;
         maxProofsVerified: 0 | 1 | 2;
         shouldVerify: import("o1js/dist/node/lib/provable/bool.js").Bool;
         toJSON(): import("o1js").JsonProof;
     };
-    publicInputType: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);
+    publicInputType: typeof import("./zkProgram.js").PublicArgumets;
     publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
     tag: () => {
         name: string;
-        publicInputType: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);
+        publicInputType: typeof import("./zkProgram.js").PublicArgumets;
         publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
     };
     fromJSON<S extends (new (...args: any) => Proof<unknown, unknown>) & {

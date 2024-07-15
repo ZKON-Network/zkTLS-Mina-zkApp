@@ -61,7 +61,7 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
 
-    zkRequestAddress = PublicKey.fromBase58(localData.zkRequest)
+    zkRequestAddress = PublicKey.fromBase58(localData.zkRequestAddress)
 
   }
   
@@ -73,7 +73,7 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     } and balance: ${accountDetails?.balance}.`
     );
 
-  const ipfsHash = 'QmZL2TptRp26w6J5bsyFzXzDuoL1diUPjS5XqVNkMF7Auw';
+  const ipfsHash = 'QmPqp2cFGfoqsGCQduXnHNPFGFj1Bx34MvbXGvWjAXVMqE';
 
   const ipfsHashSegmented0 = segmentHash(ipfsHash);
 
