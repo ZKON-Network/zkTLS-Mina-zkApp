@@ -1,6 +1,10 @@
-# Mina zkApp: Zkonmina
+# ZKON Mina zkApp
 
-This template uses TypeScript.
+This repository contains the zkapps that powers the ZKON oracle ecosystem on Mina chain.
+
+## How to integrate
+
+Check [HOW-TO](HOW-TO.md)
 
 ## How to build
 
@@ -20,12 +24,6 @@ npm run testw # watch mode
 ```sh
 npm run coverage
 ```
-
-## ToDo
-
-- [x] move zkProgram to src folder
-- [x] add zkon-request zkapp and it's coordinator
-- [ ] check the zkon-request zkapp and fix the coordinator
 
 ## License
 
