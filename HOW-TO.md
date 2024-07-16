@@ -99,7 +99,7 @@ function segmentHash(ipfsHashFile: string) {
 
 ### Prepay for the requests
 
-Before doing a request you should prepay with ZKON tokens, call this method from the ZkonCoordinator and send your zkapp public key as beneficiary. 
+Before doing any request you should prepay it with ZKON tokens. Call the "prepayRequest" method from the ZkonCoordinator, sending how many request you want to prepay and your zkapp public key as beneficiary (or any zkapp you may want to prepay request for).
 
 ```tsx
   @method 
