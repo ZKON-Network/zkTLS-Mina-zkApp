@@ -25,18 +25,22 @@
     "prepare": "node build-mina-fungible-token.js && cd node_modules/mina-fungible-token && npm run build"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.16.4",
+    "@babel/core": "^7.24.9",
+    "@babel/preset-env": "^7.24.8",
     "@babel/preset-typescript": "^7.16.0",
     "@types/jest": "^27.0.3",
     "@types/node": "^20.12.12",
     "@typescript-eslint/eslint-plugin": "^7.9.0",
     "@typescript-eslint/parser": "^7.9.0",
+    "babel-loader": "^9.1.3",
     "eslint": "^8.7.0",
     "eslint-plugin-o1js": "^0.4.0",
     "jest": "^28.1.3",
     "prettier": "^2.3.2",
     "ts-jest": "^28.0.8",
-    "typescript": "^5.4.3"
+    "typescript": "^5.4.3",
+    "webpack": "^5.93.0",
+    "webpack-cli": "^5.1.4"
   },
   "peerDependencies": {
     "o1js": "^1.2.0"

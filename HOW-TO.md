@@ -78,6 +78,53 @@ For requesting the offchain data you will need to create a json with the followi
 }
 ```
 
+To compile your zkapp into a single file:
+
+```
+npm install --save-dev webpack webpack-cli babel-loader @babel/core @babel/preset-env
+```
+
+webpack.config.cjs
+
+```js
+const path = require('path');
+
+module.exports = {
+  entry: './build/src/ZkonRequest.js', // Path to your main file
+  output: {
+    filename: 'bundle.js', // Output file
+    path: path.resolve(__dirname, 'dist'), // Output directory
+    library: {
+      type: 'commonjs2', // Ensure it uses CommonJS2 export format
+    },
+  },
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader', // Use Babel for ES6+ support
+          options: {
+            presets: ['@babel/preset-env'],
+          },
+        },
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.js'],
+  },
+};
+
+
+```
+
+And then run:
+```
+npx webpack --config webpack.config.cjs
+```
+
 Now you can upload the JSON to IPFS.
 
 And here is a sample code on how to convert a IPFS hash to two Fields:
