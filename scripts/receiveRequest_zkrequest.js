@@ -7,12 +7,13 @@ import {
     AccountUpdate,
     Lightnet,
     PublicKey,
+    Field,
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
 import { StringCircuitValue } from '../build/src/String.js';
 import { ZkonRequestCoordinator } from '../build/src/ZkonRequestCoordinator.js';
-import { ZkonZkProgram } from '../build/src/zkProgram.js';
+import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.js';
     
   // Network configuration
   const transactionFee = 100_000_000;
@@ -38,8 +39,8 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     localData = fs.readJsonSync('./data/addresses.json');
     let deployerKey;
     if (!!localData){
-      if (!!localData.deployerKey){
-        deployerKey = PrivateKey.fromBase58(localData.deployerKey)
+      if (!!localData.oracleKey){
+        deployerKey = PrivateKey.fromBase58(localData.oracleKey)
       }else{
         deployerKey = (await Lightnet.acquireKeyPair()).privateKey
       }
@@ -73,28 +74,42 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     } and balance: ${accountDetails?.balance}.`
     );
 
-  const ipfsHash = 'QmPqp2cFGfoqsGCQduXnHNPFGFj1Bx34MvbXGvWjAXVMqE';
-
-  const ipfsHashSegmented0 = segmentHash(ipfsHash);
 
   await ZkonZkProgram.compile();
     
   await ZkonRequestCoordinator.compile();
   // ZkRequest App
   await fetchAccount({ publicKey: zkRequestAddress }); // Ensure it exis...  
-  await fetchAccount({ publicKey: zkCoordinatorAddress }); // Ensure it exis...  
 
   await ZkonRequest.compile();
   console.log('Compiled');
   const zkRequest = new ZkonRequest(zkRequestAddress);
   console.log('');
+
+  const D = Field(BigInt(`0x${'576308522f190f60ce8deb20267e42235e66199dffe338593f515235734e2566'}`));
+
+  const p256data = new P256Data({
+    signature: 'E158B0250E5F1070A07378F8AE847CD7E46FB5C5553A4FA3EA2861E28D267F72A3572292F38B6455F6993E433793065ABDC366503B45515A0DBDB2E3D73C2392',
+    messageHex: 'be22c65b744f3a2f6db0c31e5fb7123dc9fcb524c87e62d86ab0d7819ca72009f5d377fc158f72685a76099c7c20afeca749b206c85c7e12311c3cd0778359820001000000000000c00300000000000089f39866000000000041045eeaed1d65c6b3303e8696f9c1bd83ddcaea047dcd8e4809f00e20524adcc81a077b94873adff996fc1e8b0d9316848bc586808485c07338393328b412db61987a2570f6245ff717ea152b02a1a1bc327eac92d345e42837deed432dac83eba5'
+  });
+
+  const publicArguments = new PublicArgumets({
+    commitment: Field(BigInt(`0x${'576308522f190f60ce8deb20267e42235e66199dffe338593f515235734e2566'}`)),
+    dataField: Field(7599633)
+  })
+
+  const proof = await ZkonZkProgram.verifySource(
+    publicArguments,
+    D,
+    p256data
+  );
   
   // Send request via zkRequest app
   console.log(`Sending request via zkRequest at ${zkRequestAddress.toBase58()}`);  
   let transaction = await Mina.transaction(
     { sender, fee: transactionFee },
     async () => {
-      await zkRequest.sendRequest(ipfsHashSegmented0.field1,ipfsHashSegmented0.field2);
+      await zkRequest.receiveZkonResponse(Field(1),proof);
     }
   );
   console.log('Generating proof');

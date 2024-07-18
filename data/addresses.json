@@ -1,10 +1,12 @@
 {
   "deployerKey": "EKFd6KaL2c5XVGzv8abqmDthJpWCQ41KPMztRCD14zwi6qun9RUi",
   "deployerAddress": "B62qqaPx1rMQ2txBwgmc7BGnVTHG8JraJyQHsBcBEAE7FgsUAZNGLw2",
-  "coordinatorKey": "EKFABXC97iZ5pkUmu8H6Toc4nud6aZSMv9ZSPvxk8Maub1phVH9y",
-  "coordinatorAddress": "B62qkCgxtXwgG3rjpa9jtesSLZ6ntUwzodkdhiiKiYiMH9jLUKGURp7",
-  "zkRequest": "EKEbQiVAuMiF7KqBRRh8MKM3QdJyP7SgBFgMoV1mh2k3Fo1ZVHuN",
-  "zkRequestAddress": "B62qkszUUTLQQ4dBhqRBjcur2xdbg4XMtqXXz39pRziXqJ1PJ26qSS3",
+  "coordinatorKey": "EKF2o5vdoYtGxKgU6P5Wf9YccEJfT95XA3wfPEvxr85UXNqjUWd1",
+  "coordinatorAddress": "B62qmKL4qpbcdTALPewnexhPVKfgPJXYXE2MxaFGHFuDD7GLCFqvjYy",
+  "zkRequest": "EKFSY73hCCv49Eyz13KkyR7bKS9Gzp6PVvWdQpR5nh9EM1kBtHY2",
+  "zkRequestAddress": "B62qktrUBS68wHQbwonaoXwRFvJwozQcRKUdHMdoArprzkb6scJb8J3",
   "zkAPP": "EKEhxB3CpmX3ZbpLbNnfVHZ6zTr2x9cCkmu9PJDNhBw9XAqPQfqf",
-  "zkAppAddress": "B62qkpogiGRqTSu6Khgd5mK6q7FyehwLZKVYg2LX5siCuWKFrrjtNpT"
+  "zkAppAddress": "B62qkpogiGRqTSu6Khgd5mK6q7FyehwLZKVYg2LX5siCuWKFrrjtNpT",
+  "oracleKey": "EKEe1H1jsYCeJhRtqR6Bz8eTvUVgFeXT6k5TSWdSnQdx3FHCfCjD",
+  "oracleAddress": "B62qr2vag4tdf2ckxd8o3daGxAvvBE3BNN7G6GFNBScoMpgG8SspJUk"
 }

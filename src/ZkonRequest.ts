@@ -57,3 +57,5 @@ export class ZkonRequest extends SmartContract {
     this.coinValue.set(proof.publicInput.dataField); 
   }
 }
+
+export default ZkonRequest;

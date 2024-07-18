@@ -121,6 +121,8 @@ import fs from 'fs-extra';
     localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
     localData.coordinatorKey = coordinatorKey.toBase58();
     localData.coordinatorAddress = coordinatorAddress;
+    localData.oracleKey = oracleKey.toBase58(),
+    localData.oracleAddress = oracleAddress.toBase58(),
     fs.outputJsonSync(
       "./data/addresses.json",            
         localData,      

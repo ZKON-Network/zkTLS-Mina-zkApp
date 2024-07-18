@@ -94,7 +94,9 @@ if (useCustomLocalNetwork) {
     localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
     localData.coordinatorKey = coordinatorKey.toBase58();
     localData.coordinatorAddress = coordinatorAddress;
-    fs.outputJsonSync("./data/addresses.json", localData, { spaces: 2 });
+    localData.oracleKey = oracleKey.toBase58(),
+        localData.oracleAddress = oracleAddress.toBase58(),
+        fs.outputJsonSync("./data/addresses.json", localData, { spaces: 2 });
 }
 else {
     const localData = {

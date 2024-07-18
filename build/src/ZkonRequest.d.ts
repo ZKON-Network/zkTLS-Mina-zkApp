@@ -1,4 +1,4 @@
-import { SmartContract, PublicKey, State, Field, DeployArgs, Proof } from 'o1js';
+import { SmartContract, PublicKey, State, Field, DeployArgs } from 'o1js';
 import { ExternalRequestEvent } from './ZkonRequestCoordinator.js';
 export interface AppDeployProps extends Exclude<DeployArgs, undefined> {
     /** Address of the coordinator contract */
@@ -27,19 +27,19 @@ export declare let ZkonProof_: {
         publicInputType: typeof import("./zkProgram.js").PublicArgumets;
         publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
     };
-    fromJSON<S extends (new (...args: any) => Proof<unknown, unknown>) & {
-        prototype: Proof<any, any>;
-        fromJSON: typeof Proof.fromJSON;
-        dummy: typeof Proof.dummy;
+    fromJSON<S extends (new (...args: any) => import("o1js").Proof<unknown, unknown>) & {
+        prototype: import("o1js").Proof<any, any>;
+        fromJSON: typeof import("o1js").Proof.fromJSON;
+        dummy: typeof import("o1js").Proof.dummy;
         publicInputType: import("o1js").FlexibleProvablePure<any>;
         publicOutputType: import("o1js").FlexibleProvablePure<any>;
         tag: () => {
             name: string;
         };
     } & {
-        prototype: Proof<unknown, unknown>;
-    }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
-    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<Proof<Input, OutPut>>;
+        prototype: import("o1js").Proof<unknown, unknown>;
+    }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<import("o1js").Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<import("o1js").Proof<Input, OutPut>>;
 };
 export declare class ZkonProof extends ZkonProof_ {
 }
@@ -61,3 +61,4 @@ export declare class ZkonRequest extends SmartContract {
      */
     receiveZkonResponse(requestId: Field, proof: ZkonProof): Promise<void>;
 }
+export default ZkonRequest;

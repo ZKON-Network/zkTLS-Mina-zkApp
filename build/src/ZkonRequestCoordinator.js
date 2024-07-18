@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, ZkProgram } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, ZkProgram, Provable } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonZkProgram } from './zkProgram.js';
 class RequestEvent extends Struct({
@@ -103,6 +103,10 @@ export class ZkonRequestCoordinator extends SmartContract {
     async recordRequestFullfillment(requestId, proof) {
         // Assert caller is the oracle
         const caller = this.sender.getAndRequireSignature();
+        Provable.asProver(() => {
+            console.log(caller.toBase58());
+            console.log(this.oracle.getAndRequireEquals().toBase58());
+        });
         caller.assertEquals(this.oracle.getAndRequireEquals());
         await proof.verify();
         this.emitEvent('fullfilled', requestId);

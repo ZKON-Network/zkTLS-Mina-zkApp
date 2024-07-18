@@ -65,6 +65,8 @@ Then add a callback method for receiving the response, call it “receiveZkonRes
 
 Note: Don't forget to call “recordRequestFullfillment” to ensure that the proof is correct.
 
+Note 2: Don't forget to export default your ZkApp. 
+
 ### IPFS Request
 
 For requesting the offchain data you will need to create a json with the following format: 

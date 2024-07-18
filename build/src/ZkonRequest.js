@@ -35,7 +35,6 @@ export class ZkonRequest extends SmartContract {
         const coordinatorAddress = this.coordinator.getAndRequireEquals();
         const coordinator = new ZkonRequestCoordinator(coordinatorAddress);
         const requestId = await coordinator.sendRequest(this.address, hashPart1, hashPart2);
-        const sender = this.address.toFields();
         const event = new ExternalRequestEvent({
             id: requestId,
             hash1: hashPart1,
@@ -74,4 +73,5 @@ __decorate([
     __metadata("design:paramtypes", [Field, ZkonProof]),
     __metadata("design:returntype", Promise)
 ], ZkonRequest.prototype, "receiveZkonResponse", null);
+export default ZkonRequest;
 //# sourceMappingURL=ZkonRequest.js.map
