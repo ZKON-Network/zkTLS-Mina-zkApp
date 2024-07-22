@@ -23,8 +23,8 @@ const checkECDSA =(message:string, signature:string): Bool=>{
   return new Bool(result);
 }
 
-const ZkonZkProgramTest = ZkProgram({
-  name:'zkon-proof',
+const ZkonZkProgram = ZkProgram({
+  name:'zkonProof',
   publicInput: PublicArgumets,
 
   methods:{
@@ -97,4 +97,4 @@ const ZkonZkProgramTest = ZkProgram({
   }
 });
 
-export {ZkonZkProgramTest, P256Data, PublicArgumets};
+export {ZkonZkProgram, P256Data, PublicArgumets};

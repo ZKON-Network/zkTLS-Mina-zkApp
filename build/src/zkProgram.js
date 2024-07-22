@@ -2,8 +2,8 @@ import { Field, ZkProgram, Bool, Struct, Provable } from 'o1js';
 import { p256 } from '@noble/curves/p256';
 import { hexToBytes } from '@noble/hashes/utils';
 class P256Data extends Struct({
-    signature: String,
-    messageHex: String
+    signature: [Field, Field, Field, Field],
+    messageHex: [Field, Field, Field, Field, Field, Field, Field, Field, Field, Field, Field, Field]
 }) {
 }
 class PublicArgumets extends Struct({
@@ -25,14 +25,49 @@ const ZkonZkProgram = ZkProgram({
         verifySource: {
             privateInputs: [Field, P256Data],
             async method(commitment, decommitment, p256_data) {
-                //P256 Signature Verification
                 const assert = Bool(true);
                 Provable.asProver(() => {
-                    const checkECDSASignature = checkECDSA(p256_data.messageHex, p256_data.signature);
+                    let concatSignature = ``;
+                    let concatMessage = ``;
+                    let fixedMessage = [];
+                    let fixedSignature = [];
+                    p256_data.messageHex.forEach((part, index) => {
+                        let data = part.toBigInt().toString(16);
+                        if (data.length != 32 && index != 11) {
+                            let padding = ``;
+                            for (let i = 0; i < (32 - data.length); i++) {
+                                padding += '0';
+                            }
+                            data = padding + data;
+                        }
+                        if (index == 11 && data.length != 22) {
+                            data = '0' + data;
+                        }
+                        fixedMessage.push(data);
+                    });
+                    p256_data.signature.forEach((part, index) => {
+                        let data = part.toBigInt().toString(16);
+                        if (data.length != 32) {
+                            let padding = ``;
+                            for (let i = 0; i < (32 - data.length); i++) {
+                                padding += '0';
+                            }
+                            data = padding + data;
+                        }
+                        fixedSignature.push(data);
+                    });
+                    fixedMessage.forEach((data, index) => {
+                        concatMessage += data;
+                    });
+                    fixedSignature.forEach(data => {
+                        concatSignature += data;
+                    });
+                    console.log(concatSignature);
+                    const messageHex = concatMessage;
+                    const signature = concatSignature;
+                    const checkECDSASignature = checkECDSA(messageHex, signature);
                     assert.assertEquals(checkECDSASignature);
                 });
-                // Check if the SH256 Hash commitment of the data-source is same 
-                // as the response reconstructed from the MPC-Proof. 
                 decommitment.assertEquals(commitment.commitment);
             }
         }

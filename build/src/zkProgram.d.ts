@@ -1,50 +1,54 @@
-import { Provable } from 'o1js';
 declare const P256Data_base: (new (value: {
-    signature: string;
-    messageHex: string;
+    signature: import("o1js/dist/node/lib/provable/field").Field[];
+    messageHex: import("o1js/dist/node/lib/provable/field").Field[];
 }) => {
-    signature: string;
-    messageHex: string;
+    signature: import("o1js/dist/node/lib/provable/field").Field[];
+    messageHex: import("o1js/dist/node/lib/provable/field").Field[];
 }) & {
     _isStruct: true;
-} & Provable<{
-    signature: string;
-    messageHex: string;
+} & Omit<import("o1js/dist/node/lib/provable/types/provable-intf").Provable<{
+    signature: import("o1js/dist/node/lib/provable/field").Field[];
+    messageHex: import("o1js/dist/node/lib/provable/field").Field[];
 }, {
-    signature: string;
-    messageHex: string;
-}> & {
+    signature: bigint[];
+    messageHex: bigint[];
+}>, "fromFields"> & {
+    fromFields: (fields: import("o1js/dist/node/lib/provable/field").Field[]) => {
+        signature: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+    };
+} & {
     fromValue: (value: {
-        signature: string;
-        messageHex: string;
+        signature: (string | number | bigint | import("o1js/dist/node/lib/provable/field").Field)[];
+        messageHex: (string | number | bigint | import("o1js/dist/node/lib/provable/field").Field)[];
     }) => {
-        signature: string;
-        messageHex: string;
+        signature: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
     };
     toInput: (x: {
-        signature: string;
-        messageHex: string;
+        signature: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
     }) => {
         fields?: import("o1js/dist/node/lib/provable/field").Field[] | undefined;
         packed?: [import("o1js/dist/node/lib/provable/field").Field, number][] | undefined;
     };
     toJSON: (x: {
-        signature: string;
-        messageHex: string;
+        signature: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
     }) => {
-        signature: string;
-        messageHex: string;
+        signature: string[];
+        messageHex: string[];
     };
     fromJSON: (x: {
-        signature: string;
-        messageHex: string;
+        signature: string[];
+        messageHex: string[];
     }) => {
-        signature: string;
-        messageHex: string;
+        signature: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
     };
     empty: () => {
-        signature: string;
-        messageHex: string;
+        signature: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
     };
 };
 declare class P256Data extends P256Data_base {

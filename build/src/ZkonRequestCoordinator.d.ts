@@ -246,14 +246,14 @@ export declare let ZkonProof_: {
         proof: unknown;
         publicInput: import("./zkProgram.js").PublicArgumets;
         publicOutput: void;
-        maxProofsVerified: 0 | 1 | 2;
+        maxProofsVerified: 0 | 2 | 1;
     }): {
         verify(): void;
         verifyIf(condition: import("o1js/dist/node/lib/provable/bool.js").Bool): void;
         publicInput: import("./zkProgram.js").PublicArgumets;
         publicOutput: void;
         proof: unknown;
-        maxProofsVerified: 0 | 1 | 2;
+        maxProofsVerified: 0 | 2 | 1;
         shouldVerify: import("o1js/dist/node/lib/provable/bool.js").Bool;
         toJSON(): import("o1js").JsonProof;
     };
@@ -276,7 +276,7 @@ export declare let ZkonProof_: {
     } & {
         prototype: Proof<unknown, unknown>;
     }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
-    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<Proof<Input, OutPut>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 2 | 1, domainLog2?: number | undefined): Promise<Proof<Input, OutPut>>;
 };
 export declare class ZkonProof extends ZkonProof_ {
 }
