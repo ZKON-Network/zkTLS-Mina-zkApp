@@ -1,4 +1,4 @@
-import { Field, SmartContract, State, PublicKey, UInt64, Proof, DeployArgs } from 'o1js';
+import { Field, SmartContract, State, PublicKey, UInt64, Proof, DeployArgs, UInt32 } from 'o1js';
 export interface CoordinatorDeployProps extends Exclude<DeployArgs, undefined> {
     oracle: PublicKey;
     zkonToken: PublicKey;
@@ -170,17 +170,17 @@ export declare class ExternalRequestEvent extends ExternalRequestEvent_base {
 declare const RequestPaidEvent_base: (new (value: {
     zkApp: PublicKey;
     requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-    createdAt: UInt64;
+    createdAt: UInt32;
 }) => {
     zkApp: PublicKey;
     requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-    createdAt: UInt64;
+    createdAt: UInt32;
 }) & {
     _isStruct: true;
 } & Omit<import("o1js/dist/node/lib/provable/types/provable-intf.js").Provable<{
     zkApp: PublicKey;
     requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-    createdAt: UInt64;
+    createdAt: UInt32;
 }, {
     zkApp: {
         x: bigint;
@@ -192,7 +192,7 @@ declare const RequestPaidEvent_base: (new (value: {
     fromFields: (fields: import("o1js/dist/node/lib/provable/field.js").Field[]) => {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: UInt64;
+        createdAt: UInt32;
     };
 } & {
     fromValue: (value: {
@@ -201,16 +201,16 @@ declare const RequestPaidEvent_base: (new (value: {
             isOdd: boolean | import("o1js/dist/node/lib/provable/bool.js").Bool;
         };
         requestsPaid: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: bigint | UInt64;
+        createdAt: bigint | UInt32;
     }) => {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: UInt64;
+        createdAt: UInt32;
     };
     toInput: (x: {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: UInt64;
+        createdAt: UInt32;
     }) => {
         fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
         packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
@@ -218,7 +218,7 @@ declare const RequestPaidEvent_base: (new (value: {
     toJSON: (x: {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: UInt64;
+        createdAt: UInt32;
     }) => {
         zkApp: string;
         requestsPaid: string;
@@ -231,12 +231,12 @@ declare const RequestPaidEvent_base: (new (value: {
     }) => {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: UInt64;
+        createdAt: UInt32;
     };
     empty: () => {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: UInt64;
+        createdAt: UInt32;
     };
 };
 declare class RequestPaidEvent extends RequestPaidEvent_base {

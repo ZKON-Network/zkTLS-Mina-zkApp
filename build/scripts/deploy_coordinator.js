@@ -39,7 +39,7 @@ if (useCustomLocalNetwork) {
         sender = senderKey.toPublicKey();
     }
     tokenAddress = PrivateKey.random().toPublicKey();
-    oracleKey = PrivateKey.random();
+    oracleKey = (await Lightnet.acquireKeyPair()).privateKey;
     oracleAddress = oracleKey.toPublicKey();
 }
 else {

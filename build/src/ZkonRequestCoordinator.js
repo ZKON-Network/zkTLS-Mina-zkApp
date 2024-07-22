@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, ZkProgram } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, ZkProgram, UInt32 } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonZkProgram } from './zkProgram.js';
 class RequestEvent extends Struct({
@@ -27,7 +27,7 @@ export class ExternalRequestEvent extends Struct({
 class RequestPaidEvent extends Struct({
     zkApp: PublicKey,
     requestsPaid: Field,
-    createdAt: UInt64
+    createdAt: UInt32
 }) {
 }
 export let ZkonProof_ = ZkProgram.Proof(ZkonZkProgram);
@@ -91,12 +91,12 @@ export class ZkonRequestCoordinator extends SmartContract {
         const feePrice = this.feePrice.getAndRequireEquals();
         const totalAmount = feePrice.mul(requestAmount);
         await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
-        //Get the current timestamp
-        const timestamp = this.self.network.timestamp;
+        //Get the Blockchain length
+        const createdAt = this.self.network.blockchainLength;
         const event = new RequestPaidEvent({
             zkApp: beneficiary,
             requestsPaid: requestAmount.toFields()[0],
-            createdAt: timestamp.getAndRequireEquals()
+            createdAt: createdAt.getAndRequireEquals()
         });
         this.emitEvent('requestsPaid', event);
     }
