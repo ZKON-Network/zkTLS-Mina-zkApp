@@ -4,7 +4,6 @@ import {
     Mina,
     PrivateKey,
     fetchAccount,
-    AccountUpdate,
     Lightnet,
     PublicKey,
     Field,
@@ -39,7 +38,7 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
     localData = fs.readJsonSync('./data/addresses.json');
     let deployerKey;
     if (!!localData){
-      if (!!localData.oracleKey){
+      if (!!localData.deployerKey){
         deployerKey = PrivateKey.fromBase58(localData.oracleKey)
       }else{
         deployerKey = (await Lightnet.acquireKeyPair()).privateKey
@@ -66,14 +65,13 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
 
   }
   
-  console.log(`Fetching the fee payer account information.`);
+  console.log(`Fetching the fee payer account information for: ${sender.toBase58()}.` );
   const accountDetails = (await fetchAccount({ publicKey: sender })).account;
   console.log(
     `Using the fee payer account ${sender.toBase58()} with nonce: ${
       accountDetails?.nonce      
     } and balance: ${accountDetails?.balance}.`
     );
-
 
   await ZkonZkProgram.compile();
     
@@ -119,7 +117,7 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   console.log('Signing');
   transaction.sign([senderKey]);
   console.log('');
-  console.log(`Sending the transaction for deploying zkRequest to: ${zkRequestAddress.toBase58()}`);
+  console.log(`Sending request via zkRequest to: ${zkRequestAddress.toBase58()}`);
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
     console.log(`Success! Deploy transaction sent.

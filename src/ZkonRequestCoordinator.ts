@@ -1,4 +1,4 @@
-import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof, DeployArgs, ZkProgram } from 'o1js';
+import { Field, SmartContract, state, State, method, PublicKey, Poseidon, UInt64, Struct, assert, Proof, DeployArgs, ZkProgram, UInt32 } from 'o1js';
 import { FungibleToken } from 'mina-fungible-token';
 import { ZkonZkProgram } from './zkProgram.js';
 
@@ -26,7 +26,7 @@ export class ExternalRequestEvent extends Struct ({
 class RequestPaidEvent extends Struct ({
   zkApp: PublicKey,
   requestsPaid: Field,
-  createdAt: UInt64
+  createdAt: UInt32
 }) {}
 
 export let ZkonProof_ = ZkProgram.Proof(ZkonZkProgram);
@@ -110,13 +110,13 @@ export class ZkonRequestCoordinator extends SmartContract {
 
     await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
     
-    //Get the current timestamp
-    const timestamp = this.self.network.timestamp
+    //Get the Blockchain length
+    const createdAt = this.self.network.blockchainLength
     
     const event = new RequestPaidEvent({
       zkApp: beneficiary,
       requestsPaid: requestAmount.toFields()[0],
-      createdAt: timestamp.getAndRequireEquals()
+      createdAt: createdAt.getAndRequireEquals()
     });
 
     this.emitEvent('requestsPaid', event);    

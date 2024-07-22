@@ -54,7 +54,7 @@ import fs from 'fs-extra';
     }
 
     tokenAddress = PrivateKey.random().toPublicKey();
-    oracleKey = PrivateKey.random();
+    oracleKey = (await Lightnet.acquireKeyPair()).privateKey
     oracleAddress = oracleKey.toPublicKey();
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
