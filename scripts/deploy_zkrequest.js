@@ -116,5 +116,18 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
         localData,      
       { spaces: 2 }
     );
+  }else{
+    const localData = {
+      deployerKey : senderKey.toBase58(),
+      deployerAddress : sender,
+      coordinatorAddress : zkCoordinatorAddress.toBase58(),
+      zkRequest : zkRequestKey.toBase58(),
+      zkRequestAddress : zkRequestAddress.toBase58()
+    }
+    fs.outputJsonSync(
+      "./data/devnet/addresses.json",            
+        localData,      
+      { spaces: 2 }
+    );
   }
   console.log('');

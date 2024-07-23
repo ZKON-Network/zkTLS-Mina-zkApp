@@ -4,7 +4,6 @@ import {
     Mina,
     PrivateKey,
     fetchAccount,
-    AccountUpdate,
     Lightnet,
     PublicKey,
   } from 'o1js';
@@ -73,7 +72,7 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     } and balance: ${accountDetails?.balance}.`
     );
 
-  const ipfsHash = 'QmPqp2cFGfoqsGCQduXnHNPFGFj1Bx34MvbXGvWjAXVMqE';
+  const ipfsHash = 'QmX9Nj2FUDpwGx2tEYd3wrRPZwa78edNUwm7MULXETG2J5';
 
   const ipfsHashSegmented0 = segmentHash(ipfsHash);
 
@@ -114,36 +113,25 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
   Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
   }
   console.log('Waiting for transaction inclusion in a block.');
-  await pendingTx.wait({ maxAttempts: 90 });
-  if (useCustomLocalNetwork){
-    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
-    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
-    localData.zkRequest = zkRequestKey.toBase58();
-    localData.zkRequestAddress = zkRequestAddress;
-    fs.outputJsonSync(
-      "./data/addresses.json",            
-        localData,      
-      { spaces: 2 }
-    );
-  }
+  await pendingTx.wait({ maxAttempts: 90 });  
   console.log('');
 
-  if (useCustomLocalNetwork){
-    console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
-    console.log('Fetching zkAppAccount...');
-    const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
+  // if (useCustomLocalNetwork){
+  //   console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
+  //   console.log('Fetching zkAppAccount...');
+  //   const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
     
-    if (accountInfo.account.zkapp) {
-      const zkAppState = accountInfo.account.zkapp;
-      const field1 =  zkAppState.appState[0];
-      const field2 =  zkAppState.appState[1];
-      console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
-      console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
-    } else {
-      console.log('No zkApp found for the given public key.');
-    }
-    console.log('zkAppAccount fetched');
-  }
+  //   if (accountInfo.account.zkapp) {
+  //     const zkAppState = accountInfo.account.zkapp;
+  //     const field1 =  zkAppState.appState[0];
+  //     const field2 =  zkAppState.appState[1];
+  //     console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
+  //     console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
+  //   } else {
+  //     console.log('No zkApp found for the given public key.');
+  //   }
+  //   console.log('zkAppAccount fetched');
+  // }
 
   function segmentHash(ipfsHashFile) {
     const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
