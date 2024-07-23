@@ -6,9 +6,7 @@ import {
     fetchAccount,
     AccountUpdate,
     Lightnet,
-    PublicKey,
-    Proof,
-    ZkProgram,
+    PublicKey,    
   } from 'o1js';
 import { ZkonRequest } from '../build/src/ZkonRequest.js';
 import fs from 'fs-extra';
@@ -54,10 +52,11 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
       sender = senderKey.toPublicKey();      
     }
   }else{
+    localData = fs.readJsonSync('./data/devnet/addresses.json');
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
     sender = senderKey.toPublicKey();
 
-    zkCoordinatorAddress = PublicKey.fromBase58(process.env.COORDINATOR_ADDRESS);
+    zkCoordinatorAddress = PublicKey.fromBase58(localData.coordinatorAddress);
   }
   
   console.log(`Fetching the fee payer account information.`);
@@ -68,7 +67,7 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
     } and balance: ${accountDetails?.balance}.`
     );  
     
-    await ZkonZkProgram.compile();
+  await ZkonZkProgram.compile();
   // ZkRequest App   
   const zkRequestKey = PrivateKey.random();
   const zkRequestAddress = zkRequestKey.toPublicKey();
@@ -95,12 +94,10 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
   console.log('Signing');
   transaction.sign([senderKey, zkRequestKey]);
   console.log('');
-  console.log(`Sending the transaction for deploying zkRequest to: ${zkRequestAddress.toBase58()}`);
+  console.log(`Sending the request transaction to zkRequest at: ${zkRequestAddress.toBase58()}`);
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy transaction sent.
-  Your smart contract will be deployed
-  as soon as the transaction is included in a block.
+    console.log(`Success! Request transaction sent.  
   Txn hash: ${pendingTx.hash}
   Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
   }
@@ -117,13 +114,12 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
       { spaces: 2 }
     );
   }else{
-    const localData = {
-      deployerKey : senderKey.toBase58(),
-      deployerAddress : sender,
-      coordinatorAddress : zkCoordinatorAddress.toBase58(),
-      zkRequest : zkRequestKey.toBase58(),
-      zkRequestAddress : zkRequestAddress.toBase58()
-    }
+    localData.deployerKey = senderKey.toBase58()
+    localData.deployerAddress = sender
+    localData.coordinatorAddress = zkCoordinatorAddress.toBase58()
+    localData.zkRequest = zkRequestKey.toBase58()
+    localData.zkRequestAddress = zkRequestAddress.toBase58()
+    
     fs.outputJsonSync(
       "./data/devnet/addresses.json",            
         localData,      
