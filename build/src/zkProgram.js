@@ -74,4 +74,5 @@ const ZkonZkProgram = ZkProgram({
     }
 });
 export { ZkonZkProgram, P256Data, PublicArgumets };
+export default ZkonZkProgram;
 //# sourceMappingURL=zkProgram.js.map

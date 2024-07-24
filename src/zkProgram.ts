@@ -98,3 +98,4 @@ const ZkonZkProgram = ZkProgram({
 });
 
 export {ZkonZkProgram, P256Data, PublicArgumets};
+export default ZkonZkProgram;

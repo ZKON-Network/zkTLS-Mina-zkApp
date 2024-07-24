@@ -143,3 +143,4 @@ declare const ZkonZkProgram: {
     verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field").Field, P256Data] & any[]) => Promise<import("o1js").Proof<PublicArgumets, void>>;
 };
 export { ZkonZkProgram, P256Data, PublicArgumets };
+export default ZkonZkProgram;
