@@ -300,4 +300,4 @@ export declare class ZkonRequestCoordinator extends SmartContract {
     prepayRequest(requestAmount: UInt64, beneficiary: PublicKey): Promise<void>;
     recordRequestFullfillment(requestId: Field, proof: ZkonProof): Promise<void>;
 }
-export {};
+export default ZkonRequestCoordinator;

@@ -164,4 +164,5 @@ __decorate([
     __metadata("design:paramtypes", [Field, ZkonProof]),
     __metadata("design:returntype", Promise)
 ], ZkonRequestCoordinator.prototype, "recordRequestFullfillment", null);
+export default ZkonRequestCoordinator;
 //# sourceMappingURL=ZkonRequestCoordinator.js.map

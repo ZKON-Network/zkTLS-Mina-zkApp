@@ -133,3 +133,5 @@ export class ZkonRequestCoordinator extends SmartContract {
     this.emitEvent('fullfilled', requestId);
   }
 }
+
+export default ZkonRequestCoordinator;
