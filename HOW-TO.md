@@ -8,7 +8,7 @@ Version v0.0.1-preview
 
 **ZkonCoordinator**
 
-B62qrNM4z2hRR7XjMvvn53rHzA7Rgph3DVWms7AC4QdNBRL2xMs8kpF
+B62qnmsn4Bm4MzPujKeN1faxedz4p1cCAwA9mKAWzDjfb4c1ysVvWeK
 
 ### Setup
 
