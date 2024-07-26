@@ -4,10 +4,6 @@
 
 Version v0.0.1-preview
 
-## Warning
-
-This is a devnet version, not audited and not ready for mainnet yet.
-
 ### Devnet Addresses
 
 **ZkonCoordinator**

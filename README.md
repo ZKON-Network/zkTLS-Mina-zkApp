@@ -6,6 +6,11 @@ This repository contains the zkapps that powers the ZKON oracle ecosystem on Min
 
 Check [HOW-TO](HOW-TO.md)
 
+
+## Warning
+
+This is a devnet version, not audited and not ready for mainnet yet.
+
 ## How to build
 
 ```sh
