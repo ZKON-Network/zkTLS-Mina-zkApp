@@ -105,6 +105,8 @@ function segmentHash(ipfsHashFile: string) {
 
 ### Prepay for the requests
 
+Note: For devnet there is no need to prepay for the requests.
+
 Before doing any request you should prepay it with ZKON tokens. Call the "prepayRequest" method from the ZkonCoordinator, sending how many request you want to prepay and your zkapp public key as beneficiary (or any zkapp you may want to prepay request for).
 
 ```tsx
