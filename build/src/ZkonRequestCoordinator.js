@@ -57,7 +57,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     }
     onlyOwner() {
         const currentOwner = this.owner.getAndRequireEquals();
-        currentOwner.assertEquals(this.sender.getAndRequireSignature()); // Verificamos que el remitente sea el propietario
+        currentOwner.assertEquals(this.sender.getAndRequireSignature());
     }
     async setFeePrice(feePrice) {
         this.onlyOwner();
