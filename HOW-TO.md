@@ -12,7 +12,9 @@ B62qnmsn4Bm4MzPujKeN1faxedz4p1cCAwA9mKAWzDjfb4c1ysVvWeK
 
 ### Setup
 
-First add the ZKON lib as a dependency in your zkapp project. 
+You will need o1.js version 1.2.0.
+
+Then add the ZKON lib as a dependency in your zkapp project. 
 package.json
 
 ```json
@@ -28,6 +30,8 @@ import { ZkonZkProgram, ZkonRequestCoordinator, ExternalRequestEvent } from 'zko
 ```
 
 ### Coding
+
+Important note: We don't actually support import extrernal deps other than the ones from zkon-zkapp and the o1.js. We're working on upgrading this. 
 
 Inside your zkapp call the sendRequest method of the coordinator, you will need to send your zkapp address and an ipfs hash (divided in two parts) with the json request. Will explain more later on the format. 
 
