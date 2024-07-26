@@ -21,8 +21,7 @@ import fs from 'fs-extra';
 
   let localData;
 
-  // Fee payer setup
-  localData = fs.readJsonSync('./data/addresses.json');
+  localData = fs.readJsonSync('./data/devnet/addresses.json');
   const zkRequestAddress = localData.zkRequestAddress;
 
   // zkApps deployment
@@ -34,7 +33,10 @@ import fs from 'fs-extra';
     const zkAppState = accountInfo.account.zkapp;
     const field1 =  zkAppState.appState[0];
     const field2 =  zkAppState.appState[1];
-    console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
+    console.log('Coordinator from zkonRequest State:', PublicKey.fromFields([field1,field2]).toBase58());
+    
+    const field3 =  zkAppState.appState[2];
+    console.log('Coin value:', field3.toString());
   } else {
     console.log('No zkApp found for the given public key.');
   }

@@ -32,6 +32,7 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   let localData;
   let zkCoordinatorAddress;
   let zkRequestAddress;
+  let oracleKey;
 
   // Fee payer setup
   if (useCustomLocalNetwork){
@@ -58,11 +59,10 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   }else{
     localData = fs.readJsonSync('./data/devnet/addresses.json');
 
-    senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    senderKey = PrivateKey.fromBase58(localData.oracleKey)
     sender = senderKey.toPublicKey();
 
-    zkRequestAddress = PublicKey.fromBase58(localData.zkRequestAddress)
-
+    zkRequestAddress = PublicKey.fromBase58(localData.zkRequestAddress)    
   }
   
   console.log(`Fetching the fee payer account information for: ${sender.toBase58()}.` );
@@ -120,7 +120,7 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   console.log(`Sending request via zkRequest to: ${zkRequestAddress.toBase58()}`);
   let pendingTx = await transaction.send();
   if (pendingTx.status === 'pending') {
-    console.log(`Success! Deploy transaction sent.
+    console.log(`Success! Receive zkonResponse transaction sent.
   Your smart contract will be deployed
   as soon as the transaction is included in a block.
   Txn hash: ${pendingTx.hash}
@@ -128,35 +128,8 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
-  if (useCustomLocalNetwork){
-    localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
-    localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;
-    localData.zkRequest = zkRequestKey.toBase58();
-    localData.zkRequestAddress = zkRequestAddress;
-    fs.outputJsonSync(
-      "./data/addresses.json",            
-        localData,      
-      { spaces: 2 }
-    );
-  }
-  console.log('');
-
-  if (useCustomLocalNetwork){
-    console.log(`Reading from zkApp in ${zkRequestAddress.toBase58()}`);
-    console.log('Fetching zkAppAccount...');
-    const accountInfo = await fetchAccount({publicKey: zkRequestAddress.toBase58(), network});
-    
-    if (accountInfo.account.zkapp) {
-      const zkAppState = accountInfo.account.zkapp;
-      const field1 =  zkAppState.appState[0];
-      const field2 =  zkAppState.appState[1];
-      console.log(`Coordinator sent as paramenter: ${zkCoordinatorAddress.toBase58()}`);
-      console.log('zkApp State:', PublicKey.fromFields([field1,field2]).toBase58() );
-    } else {
-      console.log('No zkApp found for the given public key.');
-    }
-    console.log('zkAppAccount fetched');
-  }
+  
+  console.log(''); 
 
   function segmentHash(ipfsHashFile) {
     const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
