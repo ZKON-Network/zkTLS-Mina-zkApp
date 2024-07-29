@@ -4,7 +4,7 @@ This repository contains the zkapps that powers the ZKON oracle ecosystem on Min
 
 ## How to integrate
 
-Check documentation on [ZKON Mina Integration](https://www.zkon.xyz/documentation)
+Check documentation on [ZKON Mina Integration](https://www.zkon.xyz/documentation).
 
 ## Warning
 
