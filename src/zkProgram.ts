@@ -1,101 +1,48 @@
-import { Mina,Field, ZkProgram, Bool, Struct, Provable} from 'o1js';
-import { p256, secp256r1 } from '@noble/curves/p256';
-import { hexToBytes, bytesToHex } from '@noble/hashes/utils';
+import { Mina, Field, ZkProgram, Struct} from 'o1js';
+import { proveableECDSAreturnR } from './proveableECDSA.js'
 
-class P256Data extends Struct({
-  signature: [Field,Field,Field,Field],
-  messageHex: [Field,Field,Field,Field,Field,Field,Field,Field,Field,Field,Field,Field]
+class ECDSAHelper extends Struct({
+  messageHash: BigInt,
+  r: BigInt,
+  s: BigInt
 }){}
 
 class PublicArgumets extends Struct({
-  commitment: Field,
-  dataField:Field
-}){}
+    commitment: Field,
+    dataField:Field
+  }){}
 
-const checkECDSA =(message:string, signature:string): Bool=>{
-  const public_key_notary = hexToBytes('0206fdfa148e1916ccc96b40d0149df05825ef54b16b711ccc1b991a4de1c6a12c');
-  const messageActual = hexToBytes(message);
-  const signatureActual = p256.Signature.fromCompact(signature)
-  const result = p256.verify(signatureActual, 
-    messageActual, 
-    public_key_notary, 
-    {prehash:true})
-  return new Bool(result);
+const checkECDSA = async (e:bigint,s:bigint,r:bigint): Promise<bigint> => {
+  const publicKey = {
+    x:BigInt(59584560953242332934734563514771605484743832818030684748574986816321863477095n),
+    y:BigInt(35772424464574968427090264313855970786042086272413829287792016132157953251778n)
+  }
+
+  const result = await proveableECDSAreturnR(e ,s, r, publicKey.x,publicKey.y);
+  //const result = true;
+  return result
 }
 
 const ZkonZkProgram = ZkProgram({
-  name:'zkonProof',
-  publicInput: PublicArgumets,
-
-  methods:{
-    verifySource:{
-      privateInputs: [Field, P256Data], 
-      async method (
-        commitment: PublicArgumets,
-        decommitment: Field,
-        p256_data: P256Data,
-      ){
-          const assert = Bool(true);
-          
-          Provable.asProver(()=>{
-            let concatSignature = ``;
-            let concatMessage=``;
-            let fixedMessage:string[] = [];
-            let fixedSignature:string[]=[];
-
-            p256_data.messageHex.forEach((part, index)=>{
-              let data:string = part.toBigInt().toString(16);
-
-              if(data.length !=32 && index != 11){
-                let padding = ``
-                for(let i=0;i<(32 - data.length);i++){
-                    padding+='0'
-                }
-                data=padding+data;
-              }
-
-              if(index == 11 && data.length != 22){
-                  data = '0'+data;
-              }
-
-              fixedMessage.push(data);
-            })
-
-            p256_data.signature.forEach((part, index)=>{
-              let data:string = part.toBigInt().toString(16);
-
-              if(data.length !=32){
-                  let padding = ``
-                  for(let i=0;i<(32 - data.length);i++){
-                      padding+='0'
-                  }
-                  data=padding+data;
-              }
-
-              fixedSignature.push(data);
-            })
-
-            fixedMessage.forEach((data,index)=>{
-              concatMessage+=data
-            })
-
-            fixedSignature.forEach(data=>{
-              concatSignature += data;
-            })
-
-            console.log(concatSignature)
-
-            const messageHex:string = concatMessage;
-            const signature: string = concatSignature;
-            const checkECDSASignature = checkECDSA(messageHex, signature);
-            assert.assertEquals(checkECDSASignature);
-          })
-          
-          decommitment.assertEquals(commitment.commitment);
+    name:'zkon-proof',
+    publicInput: PublicArgumets,
+  
+    methods:{
+      verifySource:{
+        privateInputs: [Field, ECDSAHelper], 
+        async method (
+          commitment: PublicArgumets,
+          decommitment: Field,
+          ECDSASign:ECDSAHelper,
+        ){
+            const checkECDSASignature: bigint = await checkECDSA(ECDSASign.messageHash, ECDSASign.s, ECDSASign.r);
+            const Recovery_xAffine = Field(checkECDSASignature);
+            Recovery_xAffine.assertEquals(Field(ECDSASign.r),"Proof Failed: Recovery Point x-affine not same as Signature-R, Invalid ECDSA Signature.");
+      
+            decommitment.assertEquals(commitment.commitment);
+        }
       }
     }
-  }
-});
-
-export {ZkonZkProgram, P256Data, PublicArgumets};
-export default ZkonZkProgram;
+  });
+  
+  export {ZkonZkProgram , PublicArgumets ,ECDSAHelper};
