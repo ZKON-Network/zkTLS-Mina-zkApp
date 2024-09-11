@@ -150,3 +150,4 @@ declare const ZkonZkProgram: {
     verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field.js").Field, ECDSAHelper] & any[]) => Promise<import("o1js").Proof<PublicArgumets, void>>;
 };
 export { ZkonZkProgram, PublicArgumets, ECDSAHelper };
+export default ZkonZkProgram;

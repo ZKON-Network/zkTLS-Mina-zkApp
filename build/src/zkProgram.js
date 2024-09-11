@@ -17,7 +17,6 @@ const checkECDSA = async (e, s, r) => {
         y: BigInt(35772424464574968427090264313855970786042086272413829287792016132157953251778n)
     };
     const result = await proveableECDSAreturnR(e, s, r, publicKey.x, publicKey.y);
-    //const result = true;
     return result;
 };
 const ZkonZkProgram = ZkProgram({
@@ -36,4 +35,5 @@ const ZkonZkProgram = ZkProgram({
     }
 });
 export { ZkonZkProgram, PublicArgumets, ECDSAHelper };
+export default ZkonZkProgram;
 //# sourceMappingURL=zkProgram.js.map

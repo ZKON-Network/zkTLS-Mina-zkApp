@@ -19,7 +19,6 @@ const checkECDSA = async (e:bigint,s:bigint,r:bigint): Promise<bigint> => {
   }
 
   const result = await proveableECDSAreturnR(e ,s, r, publicKey.x,publicKey.y);
-  //const result = true;
   return result
 }
 
@@ -46,3 +45,4 @@ const ZkonZkProgram = ZkProgram({
   });
   
   export {ZkonZkProgram , PublicArgumets ,ECDSAHelper};
+  export default ZkonZkProgram;
