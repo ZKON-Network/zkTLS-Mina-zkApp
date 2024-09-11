@@ -1,95 +1,102 @@
-declare const P256Data_base: (new (value: {
-    signature: import("o1js/dist/node/lib/provable/field").Field[];
-    messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+declare const ECDSAHelper_base: (new (value: {
+    messageHash: bigint;
+    r: bigint;
+    s: bigint;
 }) => {
-    signature: import("o1js/dist/node/lib/provable/field").Field[];
-    messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+    messageHash: bigint;
+    r: bigint;
+    s: bigint;
 }) & {
     _isStruct: true;
-} & Omit<import("o1js/dist/node/lib/provable/types/provable-intf").Provable<{
-    signature: import("o1js/dist/node/lib/provable/field").Field[];
-    messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+} & import("o1js").Provable<{
+    messageHash: bigint;
+    r: bigint;
+    s: bigint;
 }, {
-    signature: bigint[];
-    messageHex: bigint[];
-}>, "fromFields"> & {
-    fromFields: (fields: import("o1js/dist/node/lib/provable/field").Field[]) => {
-        signature: import("o1js/dist/node/lib/provable/field").Field[];
-        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
-    };
-} & {
+    messageHash: bigint;
+    r: bigint;
+    s: bigint;
+}> & {
     fromValue: (value: {
-        signature: (string | number | bigint | import("o1js/dist/node/lib/provable/field").Field)[];
-        messageHex: (string | number | bigint | import("o1js/dist/node/lib/provable/field").Field)[];
+        messageHash: bigint;
+        r: bigint;
+        s: bigint;
     }) => {
-        signature: import("o1js/dist/node/lib/provable/field").Field[];
-        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHash: bigint;
+        r: bigint;
+        s: bigint;
     };
     toInput: (x: {
-        signature: import("o1js/dist/node/lib/provable/field").Field[];
-        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHash: bigint;
+        r: bigint;
+        s: bigint;
     }) => {
-        fields?: import("o1js/dist/node/lib/provable/field").Field[] | undefined;
-        packed?: [import("o1js/dist/node/lib/provable/field").Field, number][] | undefined;
+        fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
+        packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
     };
     toJSON: (x: {
-        signature: import("o1js/dist/node/lib/provable/field").Field[];
-        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHash: bigint;
+        r: bigint;
+        s: bigint;
     }) => {
-        signature: string[];
-        messageHex: string[];
+        messageHash: string;
+        r: string;
+        s: string;
     };
     fromJSON: (x: {
-        signature: string[];
-        messageHex: string[];
+        messageHash: string;
+        r: string;
+        s: string;
     }) => {
-        signature: import("o1js/dist/node/lib/provable/field").Field[];
-        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHash: bigint;
+        r: bigint;
+        s: bigint;
     };
     empty: () => {
-        signature: import("o1js/dist/node/lib/provable/field").Field[];
-        messageHex: import("o1js/dist/node/lib/provable/field").Field[];
+        messageHash: bigint;
+        r: bigint;
+        s: bigint;
     };
 };
-declare class P256Data extends P256Data_base {
+declare class ECDSAHelper extends ECDSAHelper_base {
 }
 declare const PublicArgumets_base: (new (value: {
-    commitment: import("o1js/dist/node/lib/provable/field").Field;
-    dataField: import("o1js/dist/node/lib/provable/field").Field;
+    commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+    dataField: import("o1js/dist/node/lib/provable/field.js").Field;
 }) => {
-    commitment: import("o1js/dist/node/lib/provable/field").Field;
-    dataField: import("o1js/dist/node/lib/provable/field").Field;
+    commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+    dataField: import("o1js/dist/node/lib/provable/field.js").Field;
 }) & {
     _isStruct: true;
-} & Omit<import("o1js/dist/node/lib/provable/types/provable-intf").Provable<{
-    commitment: import("o1js/dist/node/lib/provable/field").Field;
-    dataField: import("o1js/dist/node/lib/provable/field").Field;
+} & Omit<import("o1js/dist/node/lib/provable/types/provable-intf.js").Provable<{
+    commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+    dataField: import("o1js/dist/node/lib/provable/field.js").Field;
 }, {
     commitment: bigint;
     dataField: bigint;
 }>, "fromFields"> & {
-    fromFields: (fields: import("o1js/dist/node/lib/provable/field").Field[]) => {
-        commitment: import("o1js/dist/node/lib/provable/field").Field;
-        dataField: import("o1js/dist/node/lib/provable/field").Field;
+    fromFields: (fields: import("o1js/dist/node/lib/provable/field.js").Field[]) => {
+        commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: import("o1js/dist/node/lib/provable/field.js").Field;
     };
 } & {
     fromValue: (value: {
-        commitment: string | number | bigint | import("o1js/dist/node/lib/provable/field").Field;
-        dataField: string | number | bigint | import("o1js/dist/node/lib/provable/field").Field;
+        commitment: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field;
     }) => {
-        commitment: import("o1js/dist/node/lib/provable/field").Field;
-        dataField: import("o1js/dist/node/lib/provable/field").Field;
+        commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: import("o1js/dist/node/lib/provable/field.js").Field;
     };
     toInput: (x: {
-        commitment: import("o1js/dist/node/lib/provable/field").Field;
-        dataField: import("o1js/dist/node/lib/provable/field").Field;
+        commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: import("o1js/dist/node/lib/provable/field.js").Field;
     }) => {
-        fields?: import("o1js/dist/node/lib/provable/field").Field[] | undefined;
-        packed?: [import("o1js/dist/node/lib/provable/field").Field, number][] | undefined;
+        fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
+        packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
     };
     toJSON: (x: {
-        commitment: import("o1js/dist/node/lib/provable/field").Field;
-        dataField: import("o1js/dist/node/lib/provable/field").Field;
+        commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: import("o1js/dist/node/lib/provable/field.js").Field;
     }) => {
         commitment: string;
         dataField: string;
@@ -98,12 +105,12 @@ declare const PublicArgumets_base: (new (value: {
         commitment: string;
         dataField: string;
     }) => {
-        commitment: import("o1js/dist/node/lib/provable/field").Field;
-        dataField: import("o1js/dist/node/lib/provable/field").Field;
+        commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: import("o1js/dist/node/lib/provable/field.js").Field;
     };
     empty: () => {
-        commitment: import("o1js/dist/node/lib/provable/field").Field;
-        dataField: import("o1js/dist/node/lib/provable/field").Field;
+        commitment: import("o1js/dist/node/lib/provable/field.js").Field;
+        dataField: import("o1js/dist/node/lib/provable/field.js").Field;
     };
 };
 declare class PublicArgumets extends PublicArgumets_base {
@@ -116,7 +123,7 @@ declare const ZkonZkProgram: {
     } | undefined) => Promise<{
         verificationKey: {
             data: string;
-            hash: import("o1js/dist/node/lib/provable/field").Field;
+            hash: import("o1js/dist/node/lib/provable/field.js").Field;
         };
     }>;
     verify: (proof: import("o1js").Proof<PublicArgumets, void>) => Promise<boolean>;
@@ -125,22 +132,21 @@ declare const ZkonZkProgram: {
         verifySource: {
             rows: number;
             digest: string;
-            gates: import("o1js/dist/node/snarky").Gate[];
+            gates: import("o1js/dist/node/snarky.js").Gate[];
             publicInputSize: number;
             print(): void;
-            summary(): Partial<Record<import("o1js/dist/node/snarky").GateType | "Total rows", number>>;
+            summary(): Partial<Record<import("o1js/dist/node/snarky.js").GateType | "Total rows", number>>;
         };
     }>;
     publicInputType: typeof PublicArgumets;
-    publicOutputType: import("o1js/dist/node/lib/provable/types/struct").ProvablePureExtended<void, void, null>;
+    publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
     privateInputTypes: {
-        verifySource: [typeof import("o1js/dist/node/lib/provable/field").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field").Field | import("o1js/dist/node/lib/provable/core/fieldvar").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar").FieldConst) => import("o1js/dist/node/lib/provable/field").Field), typeof P256Data];
+        verifySource: [typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field), typeof ECDSAHelper];
     };
     rawMethods: {
-        verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field").Field, P256Data] & any[]) => Promise<void>;
+        verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field.js").Field, ECDSAHelper] & any[]) => Promise<void>;
     };
 } & {
-    verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field").Field, P256Data] & any[]) => Promise<import("o1js").Proof<PublicArgumets, void>>;
+    verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field.js").Field, ECDSAHelper] & any[]) => Promise<import("o1js").Proof<PublicArgumets, void>>;
 };
-export { ZkonZkProgram, P256Data, PublicArgumets };
-export default ZkonZkProgram;
+export { ZkonZkProgram, PublicArgumets, ECDSAHelper };
