@@ -2,34 +2,48 @@ declare const ECDSAHelper_base: (new (value: {
     messageHash: bigint;
     r: bigint;
     s: bigint;
+    publicKeyX: bigint;
+    publicKeyY: bigint;
 }) => {
     messageHash: bigint;
     r: bigint;
     s: bigint;
+    publicKeyX: bigint;
+    publicKeyY: bigint;
 }) & {
     _isStruct: true;
 } & import("o1js").Provable<{
     messageHash: bigint;
     r: bigint;
     s: bigint;
+    publicKeyX: bigint;
+    publicKeyY: bigint;
 }, {
     messageHash: bigint;
     r: bigint;
     s: bigint;
+    publicKeyX: bigint;
+    publicKeyY: bigint;
 }> & {
     fromValue: (value: {
         messageHash: bigint;
         r: bigint;
         s: bigint;
+        publicKeyX: bigint;
+        publicKeyY: bigint;
     }) => {
         messageHash: bigint;
         r: bigint;
         s: bigint;
+        publicKeyX: bigint;
+        publicKeyY: bigint;
     };
     toInput: (x: {
         messageHash: bigint;
         r: bigint;
         s: bigint;
+        publicKeyX: bigint;
+        publicKeyY: bigint;
     }) => {
         fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
         packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
@@ -38,24 +52,34 @@ declare const ECDSAHelper_base: (new (value: {
         messageHash: bigint;
         r: bigint;
         s: bigint;
+        publicKeyX: bigint;
+        publicKeyY: bigint;
     }) => {
         messageHash: string;
         r: string;
         s: string;
+        publicKeyX: string;
+        publicKeyY: string;
     };
     fromJSON: (x: {
         messageHash: string;
         r: string;
         s: string;
+        publicKeyX: string;
+        publicKeyY: string;
     }) => {
         messageHash: bigint;
         r: bigint;
         s: bigint;
+        publicKeyX: bigint;
+        publicKeyY: bigint;
     };
     empty: () => {
         messageHash: bigint;
         r: bigint;
         s: bigint;
+        publicKeyX: bigint;
+        publicKeyY: bigint;
     };
 };
 declare class ECDSAHelper extends ECDSAHelper_base {
@@ -150,4 +174,3 @@ declare const ZkonZkProgram: {
     verifySource: (publicInput: PublicArgumets, ...args: [import("o1js/dist/node/lib/provable/field.js").Field, ECDSAHelper] & any[]) => Promise<import("o1js").Proof<PublicArgumets, void>>;
 };
 export { ZkonZkProgram, PublicArgumets, ECDSAHelper };
-export default ZkonZkProgram;
