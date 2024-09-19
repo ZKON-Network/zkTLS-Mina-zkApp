@@ -1,5 +1,3 @@
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-import { sha256 } from '@noble/hashes/sha2';
 const p = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F');
 async function isPointOnCurve(x, y) {
     const a = 0n;
@@ -104,43 +102,6 @@ async function modularTests(point1, point2, G_x, G_y, p) {
     k = 100n;
     result = await ellipticCurveMultiply(k, P[0], P[1], p);
     await isPointOnCurve(result[0], result[1]) ? console.log("Point on curve.") : console.log("Point not on curve.");
-}
-export async function verifyECDSA2(message, s, r, pub_x, pub_y) {
-    const p = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F');
-    const n = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141');
-    const G_x = BigInt('55066263022277343669578718895168534326250603453777594175500187360389116729240');
-    const G_y = BigInt('32670510020758816978083085130507043184471273380659243275938904335757337482424');
-    // 1. Verify that r and s are integers in [1, n-1]
-    if (r <= 0n || r >= n || s <= 0n || s >= n) {
-        return false;
-    }
-    // 2. Calculate e = HASH(m)
-    const mhash = sha256(hexToBytes(message));
-    console.log(bytesToHex(mhash));
-    //Try to send this e directly to a zkProgram
-    const e = BigInt('0x' + bytesToHex(mhash));
-    console.log(e);
-    // 3. Calculate w = s^-1 mod n
-    const sInv = await modInverse(s, n);
-    // 4. Calculate u1 = ew mod n and u2 = rw mod n
-    const u1 = (e * sInv) % n;
-    const u2 = (r * sInv) % n;
-    // 5. Calculate (x, y) = u1G + u2Q
-    const point1 = await ellipticCurveMultiply(u1, G_x, G_y, p);
-    const point2 = await ellipticCurveMultiply(u2, pub_x, pub_y, p);
-    const R = await ellipticCurveAdd(point1[0], point1[1], point2[0], point2[1], p);
-    //modularTests(point1,point1,G_x,G_y,p);
-    console.log("Recovery Point:", R);
-    // 6. If (x, y) = O (the point at infinity), the signature is invalid
-    if (R[0] === 0n && R[1] === 0n) {
-        console.log("Point at Infinity.");
-        return false;
-    }
-    // 7. Calculate v = x mod n
-    //const v = R[0] % n;
-    const v = R[0];
-    // 8. The signature is valid if and only if v = r
-    return v === r;
 }
 export async function publicKeyToCompressed(x, y) {
     // Convert x to a 32-byte hex string, padding with zeros if necessary
