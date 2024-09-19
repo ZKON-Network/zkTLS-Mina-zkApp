@@ -1,5 +1,3 @@
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-
 const p = BigInt('0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F');
   
 async function isPointOnCurve(x: bigint, y: bigint): Promise<boolean> {
@@ -123,7 +121,7 @@ async function modularTests(point1:[bigint,bigint], point2:[bigint,bigint], G_x:
   result = await ellipticCurveMultiply(k, P[0], P[1], p);
   await isPointOnCurve(result[0], result[1]) ? console.log("Point on curve.") : console.log("Point not on curve.");
 
-}
+}  
 
 export async function publicKeyToCompressed(x: bigint, y: bigint): Promise<string> {
     // Convert x to a 32-byte hex string, padding with zeros if necessary
@@ -152,7 +150,6 @@ export async function proveableECDSAreturnR(ee:bigint , s: bigint, r: bigint, pu
   // 2. Calculate e = HASH(m). Recieve this directly from zkProgram.
   const e = BigInt(ee);
   
-
   // 3. Calculate w = s^-1 mod n
   const sInv = await modInverse(s,n);
 
