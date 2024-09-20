@@ -1,12 +1,13 @@
-import { Mina, Field, ZkProgram, Struct} from 'o1js';
-import { proveableECDSAreturnR } from './proveableECDSA.js'
+import { Mina, Field, ZkProgram, Struct, createEcdsaV2, createForeignCurveV2,Crypto, Bool} from 'o1js';
+
+class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
+class Scalar extends Secp256k1.Scalar {}
+class Ecdsa extends createEcdsaV2(Secp256k1) {}
 
 class ECDSAHelper extends Struct({
-  messageHash: BigInt,
-  r: BigInt,
-  s: BigInt,
-  publicKeyX: BigInt,
-  publicKeyY: BigInt
+  messageHash: Scalar,
+  signature: Ecdsa,
+  publicKey: Secp256k1
 }){}
 
 class PublicArgumets extends Struct({
@@ -17,6 +18,7 @@ class PublicArgumets extends Struct({
 const ZkonZkProgram = ZkProgram({
     name:'zkon-proof',
     publicInput: PublicArgumets,
+    publicOutput: Bool,
   
     methods:{
       verifySource:{
@@ -26,19 +28,12 @@ const ZkonZkProgram = ZkProgram({
           decommitment: Field,
           ECDSASign:ECDSAHelper,
         ){
-            const checkECDSASignature: bigint = await proveableECDSAreturnR(ECDSASign.messageHash, 
-              ECDSASign.s, 
-              ECDSASign.r,
-              ECDSASign.publicKeyX,
-              ECDSASign.publicKeyY);
-              
-            const Recovery_xAffine = Field(checkECDSASignature);
-            Recovery_xAffine.assertEquals(Field(ECDSASign.r),"Proof Failed: Recovery Point x-affine not same as Signature-R, Invalid ECDSA Signature.");
-      
-            decommitment.assertEquals(commitment.commitment);
+          decommitment.assertEquals(commitment.commitment,"Response from proof-server invalid.");
+          return ECDSASign.signature.verifySignedHashV2(
+            ECDSASign.messageHash, ECDSASign.publicKey)
         }
       }
     }
   });
-  
+
   export {ZkonZkProgram , PublicArgumets ,ECDSAHelper};

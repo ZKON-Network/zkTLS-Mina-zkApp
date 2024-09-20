@@ -39,7 +39,7 @@
     "typescript": "^5.4.3"
   },
   "peerDependencies": {
-    "o1js": "^1.2.0"
+    "o1js": "^1.8.0"
   },
   "dependencies": {
     "@noble/curves": "^1.4.2",
