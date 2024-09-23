@@ -328,13 +328,21 @@ describe('Zkon Token Tests', () => {
   });
 
   function segmentHash(ipfsHashFile: string) {
-    const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
-    const ipfsHash1 = ipfsHashFile.slice(30); // second part of the ipfsHash
-
+    console.log('SEGMENT');
+    const ipfsHash0 = ipfsHashFile.slice(0, 29); // first part of the ipfsHash
+    const ipfsHash1 = ipfsHashFile.slice(29); // second part of the ipfsHash
+    console.log('ipfsHash0', ipfsHash0);
     const field1 = new StringCircuitValue(ipfsHash0).toField();
+    console.log('ipfsHash0 2', StringCircuitValue.fromField(field1).toString());
 
+    console.log('ipfsHash1', ipfsHash1);
     const field2 = new StringCircuitValue(ipfsHash1).toField();
+    console.log('ipfsHash1 2', StringCircuitValue.fromField(field2).toString());
 
+    const hash1 = StringCircuitValue.fromField(field1).toString().replace(/\0/g, '')
+    const hash2 = StringCircuitValue.fromField(field2).toString().replace(/\0/g, '')
+    console.log('final hash re', hash1.concat(hash2));
+    console.log('final hash', ipfsHash0.concat(ipfsHash1));
     return { field1, field2 };
   }
 });

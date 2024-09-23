@@ -195,8 +195,8 @@ describe('Zkon Request Example', () => {
   });
 
   function segmentHash(ipfsHashFile: string) {
-    const ipfsHash0 = ipfsHashFile.slice(0,30) // first part of the ipfsHash
-    const ipfsHash1 = ipfsHashFile.slice(30) // second part of the ipfsHash
+    const ipfsHash0 = ipfsHashFile.slice(0,29) // first part of the ipfsHash
+    const ipfsHash1 = ipfsHashFile.slice(29) // second part of the ipfsHash
       
     const field1 = new StringCircuitValue(ipfsHash0).toField();
     
