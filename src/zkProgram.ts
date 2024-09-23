@@ -1,10 +1,13 @@
-import { Mina, Field, ZkProgram, Struct} from 'o1js';
-import { proveableECDSAreturnR } from './proveableECDSA.js'
+import { Mina, Field, ZkProgram, Struct, createEcdsaV2, createForeignCurveV2,Crypto, Bool} from 'o1js';
+
+class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
+class Scalar extends Secp256k1.Scalar {}
+class Ecdsa extends createEcdsaV2(Secp256k1) {}
 
 class ECDSAHelper extends Struct({
-  messageHash: BigInt,
-  r: BigInt,
-  s: BigInt
+  messageHash: Scalar,
+  signature: Ecdsa,
+  publicKey: Secp256k1
 }){}
 
 class PublicArgumets extends Struct({
@@ -12,19 +15,10 @@ class PublicArgumets extends Struct({
     dataField:Field
   }){}
 
-const checkECDSA = async (e:bigint,s:bigint,r:bigint): Promise<bigint> => {
-  const publicKey = {
-    x:BigInt(59584560953242332934734563514771605484743832818030684748574986816321863477095n),
-    y:BigInt(35772424464574968427090264313855970786042086272413829287792016132157953251778n)
-  }
-
-  const result = await proveableECDSAreturnR(e ,s, r, publicKey.x,publicKey.y);
-  return result
-}
-
 const ZkonZkProgram = ZkProgram({
     name:'zkon-proof',
     publicInput: PublicArgumets,
+    publicOutput: Bool,
   
     methods:{
       verifySource:{
@@ -34,15 +28,12 @@ const ZkonZkProgram = ZkProgram({
           decommitment: Field,
           ECDSASign:ECDSAHelper,
         ){
-            const checkECDSASignature: bigint = await checkECDSA(ECDSASign.messageHash, ECDSASign.s, ECDSASign.r);
-            const Recovery_xAffine = Field(checkECDSASignature);
-            Recovery_xAffine.assertEquals(Field(ECDSASign.r),"Proof Failed: Recovery Point x-affine not same as Signature-R, Invalid ECDSA Signature.");
-      
-            decommitment.assertEquals(commitment.commitment);
+          decommitment.assertEquals(commitment.commitment,"Response from proof-server invalid.");
+          return ECDSASign.signature.verifySignedHashV2(
+            ECDSASign.messageHash, ECDSASign.publicKey)
         }
       }
     }
   });
-  
+
   export {ZkonZkProgram , PublicArgumets ,ECDSAHelper};
-  export default ZkonZkProgram;

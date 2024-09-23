@@ -8,24 +8,24 @@ export declare let ZkonProof_: {
     new ({ proof, publicInput, publicOutput, maxProofsVerified, }: {
         proof: unknown;
         publicInput: import("./zkProgram.js").PublicArgumets;
-        publicOutput: void;
+        publicOutput: import("o1js/dist/node/lib/provable/bool.js").Bool;
         maxProofsVerified: 0 | 1 | 2;
     }): {
         verify(): void;
         verifyIf(condition: import("o1js/dist/node/lib/provable/bool.js").Bool): void;
         publicInput: import("./zkProgram.js").PublicArgumets;
-        publicOutput: void;
+        publicOutput: import("o1js/dist/node/lib/provable/bool.js").Bool;
         proof: unknown;
         maxProofsVerified: 0 | 1 | 2;
         shouldVerify: import("o1js/dist/node/lib/provable/bool.js").Bool;
         toJSON(): import("o1js").JsonProof;
     };
     publicInputType: typeof import("./zkProgram.js").PublicArgumets;
-    publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
+    publicOutputType: typeof import("o1js/dist/node/lib/provable/bool.js").Bool & ((x: boolean | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/bool.js").Bool) => import("o1js/dist/node/lib/provable/bool.js").Bool);
     tag: () => {
         name: string;
         publicInputType: typeof import("./zkProgram.js").PublicArgumets;
-        publicOutputType: import("o1js/dist/node/lib/provable/types/struct.js").ProvablePureExtended<void, void, null>;
+        publicOutputType: typeof import("o1js/dist/node/lib/provable/bool.js").Bool & ((x: boolean | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/bool.js").Bool) => import("o1js/dist/node/lib/provable/bool.js").Bool);
     };
     fromJSON<S extends (new (...args: any) => import("o1js").Proof<unknown, unknown>) & {
         prototype: import("o1js").Proof<any, any>;
