@@ -57,7 +57,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     }
     onlyOwner() {
         const currentOwner = this.owner.getAndRequireEquals();
-        currentOwner.assertEquals(this.sender.getAndRequireSignature());
+        currentOwner.assertEquals(this.sender.getAndRequireSignatureV2());
     }
     async setFeePrice(feePrice) {
         this.onlyOwner();
@@ -90,7 +90,7 @@ export class ZkonRequestCoordinator extends SmartContract {
         const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());
         const feePrice = this.feePrice.getAndRequireEquals();
         const totalAmount = feePrice.mul(requestAmount);
-        await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
+        await ZkToken.transfer(this.sender.getAndRequireSignatureV2(), this.owner.getAndRequireEquals(), totalAmount);
         //Get the Blockchain length
         const createdAt = this.self.network.blockchainLength;
         const event = new RequestPaidEvent({
@@ -102,7 +102,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     }
     async recordRequestFullfillment(requestId, proof) {
         // Assert caller is the oracle
-        const caller = this.sender.getAndRequireSignature();
+        const caller = this.sender.getAndRequireSignatureV2();
         caller.assertEquals(this.oracle.getAndRequireEquals());
         await proof.verify();
         this.emitEvent('fullfilled', requestId);
