@@ -45,7 +45,7 @@ package.json
 
 ```json
   "dependencies": {
-    "zkon-zkapp": "git://github.com/ZKON-Network/zkapp.git#devnet"
+    "zkon-zkapp": "git://github.com/ZKON-Network/zkTLS-Mina-zkApp.git#devnet"
   }
 ```
 
