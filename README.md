@@ -3,6 +3,9 @@
 This repository hosts the zkApps that drive the ZKON Oracle ecosystem on the Mina blockchain. Through our innovative zkTLS Oracle, developers can securely make onchain requests, enabling the seamless integration of provable data sourced from offchain HTTPS connections. The zkTLS Oracle facilitates privacy-preserving transactions, ensuring that sensitive data can be verified without exposure.
 
 > ⚠️ **Warning**: This is a devnet version, not audited and not ready for mainnet yet.
+<div style="background-color:#f0f8ff; padding: 10px; border-radius: 5px; border-left: 5px solid #ffd700;">
+⚠️ **This is a devnet version, not audited and not ready for mainnet yet.**
+</div>
 
 ## How to build
 
