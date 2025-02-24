@@ -49,7 +49,7 @@ import fs from 'fs-extra';
     }
 
     tokenAddress = PrivateKey.random().toPublicKey();
-    oracleKey = (await Lightnet.acquireKeyPair()).privateKey
+    oracleKey = PrivateKey.random()
     oracleAddress = oracleKey.toPublicKey();
   }else{
     senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
@@ -111,6 +111,7 @@ import fs from 'fs-extra';
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });
+  console.log('New oracle address ', oracleAddress.toBase58());
   if (useCustomLocalNetwork){
     localData.deployerKey = localData.deployerKey ? localData.deployerKey : senderKey.toBase58();
     localData.deployerAddress = localData.deployerAddress ? localData.deployerAddress : sender;

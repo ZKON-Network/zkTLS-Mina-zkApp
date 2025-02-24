@@ -36,7 +36,11 @@ import {
     senderKey = deployerKey;
     sender = senderKey.toPublicKey();
     await fetchAccount({ publicKey: sender })
+  }else{    
+    senderKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    sender = senderKey.toPublicKey();
   }
+
   
   console.log(`Fetching the fee payer account information.`);
   console.log(sender.toBase58());
