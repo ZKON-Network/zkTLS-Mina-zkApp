@@ -8,12 +8,9 @@ import fs from 'fs-extra';
 const transactionFee = 100000000;
 const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';
 const network = Mina.Network({
-    mina: useCustomLocalNetwork
-        ? 'http://localhost:8080/graphql'
-        : 'https://api.minascan.io/node/devnet/v1/graphql',
+    mina: process.env.NODE,
     lightnetAccountManager: 'http://localhost:8181',
-    archive: useCustomLocalNetwork
-        ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
+    archive: process.env.NODE_ARCHIVE,
 });
 Mina.setActiveInstance(network);
 let senderKey, sender, localData, oracleAddress, oracleKey, tokenAddress;

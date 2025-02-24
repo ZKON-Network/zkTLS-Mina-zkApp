@@ -49,12 +49,13 @@ declare const StringCircuitValue_base: (new (value: {
     };
 };
 export declare class StringCircuitValue extends StringCircuitValue_base {
-    constructor(data: string);
+    constructor(data: string, values?: UInt8[]);
     repr(): number[];
     toString(): string;
     toBits(): boolean[];
     toField(): Field;
     static fromField(field: Field): StringCircuitValue;
+    static fromUint(values: UInt8[]): StringCircuitValue;
     static fromBits(bits: Bool[]): StringCircuitValue;
     hash(): import("o1js/dist/node/lib/provable/field.js").Field;
 }

@@ -18,13 +18,10 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   const transactionFee = 100_000_000;
   const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
-    mina: useCustomLocalNetwork
-      ? 'http://localhost:8080/graphql'
-      : 'https://api.minascan.io/node/devnet/v1/graphql',
+    mina: process.env.NODE,
     lightnetAccountManager: 'http://localhost:8181',
-    archive: useCustomLocalNetwork
-    ? 'http://localhost:8282' : 'https://api.minascan.io/archive/devnet/v1/graphql',
-  });
+    archive: process.env.NODE_ARCHIVE,
+});
   Mina.setActiveInstance(network);
 
   let senderKey;
@@ -37,13 +34,10 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   // Fee payer setup
   if (useCustomLocalNetwork){
     localData = fs.readJsonSync('./data/addresses.json');
-    let deployerKey;
-    if (!!localData){
-      if (!!localData.deployerKey){
-        deployerKey = PrivateKey.fromBase58(localData.oracleKey)
-      }else{
-        deployerKey = (await Lightnet.acquireKeyPair()).privateKey
-      }
+    let deployerKey = PrivateKey.fromBase58(process.env.DEPLOYER_KEY);
+    if (!deployerKey){
+      console.warn('No DEPLOYER_KEY, genereting one with Lighnet');
+      deployerKey = (await Lightnet.acquireKeyPair()).privateKey
     }
     senderKey = deployerKey;
     sender = senderKey.toPublicKey();

@@ -296,7 +296,7 @@ export declare class ZkonRequestCoordinator extends SmartContract {
         fullfilled: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);
         requestsPaid: typeof RequestPaidEvent;
     };
-    sendRequest(requester: PublicKey, hash1: Field, hash2: Field): Promise<import("o1js/dist/node/lib/provable/field.js").Field>;
+    sendRequest(requester: PublicKey, hash1: Field, hash2: Field, nonce?: Field): Promise<import("o1js/dist/node/lib/provable/field.js").Field>;
     prepayRequest(requestAmount: UInt64, beneficiary: PublicKey): Promise<void>;
     recordRequestFullfillment(requestId: Field, proof: ZkonProof): Promise<void>;
 }
