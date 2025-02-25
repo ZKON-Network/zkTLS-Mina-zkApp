@@ -29,11 +29,19 @@ npm run coverage
 
 Version v0.0.1-preview
 
-### Devnet Addresses
+### Mainnet Adresses
+
+**ZkonOracle**
+
+B62qnjaxgYZhx6Bpkc4nEguzD83amxMyedmDViDjywNe4SbSqAvUd1J
 
 **ZkonCoordinator**
 
-B62qnmsn4Bm4MzPujKeN1faxedz4p1cCAwA9mKAWzDjfb4c1ysVvWeK
+B62qmhrAwghjDoXKPVqwMqBwwFpySYQpTM3HRf2AGqWWDGtLWzRrETT
+
+> ### Devnet Addresses  
+> **ZkonCoordinator**  
+> B62qnmsn4Bm4MzPujKeN1faxedz4p1cCAwA9mKAWzDjfb4c1ysVvWeK  
 
 ### Setup
 
