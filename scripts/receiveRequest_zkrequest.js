@@ -18,6 +18,7 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   const transactionFee = 100_000_000;
   const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
+    networkId: process.env.NETWORK,
     mina: process.env.NODE,
     lightnetAccountManager: 'http://localhost:8181',
     archive: process.env.NODE_ARCHIVE,
@@ -118,7 +119,7 @@ import { P256Data, PublicArgumets, ZkonZkProgram } from '../build/src/zkProgram.
   Your smart contract will be deployed
   as soon as the transaction is included in a block.
   Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
+  Block explorer hash: https://minascan.io/${process.env.NETWORK}/tx/${pendingTx.hash}`);
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });

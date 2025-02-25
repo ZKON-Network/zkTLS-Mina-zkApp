@@ -9,6 +9,7 @@ import fs from 'fs-extra';
     
   // Network configuration
   const network = Mina.Network({
+    networkId: process.env.NETWORK,
     mina: process.env.NODE,
     lightnetAccountManager: 'http://localhost:8181',
     archive: process.env.NODE_ARCHIVE,

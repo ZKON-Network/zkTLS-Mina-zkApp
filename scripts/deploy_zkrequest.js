@@ -16,6 +16,7 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
   const transactionFee = 100_000_000;
   const useCustomLocalNetwork = process.env.USE_CUSTOM_LOCAL_NETWORK === 'true';  
   const network = Mina.Network({
+    networkId: process.env.NETWORK,
     mina: process.env.NODE,
     lightnetAccountManager: 'http://localhost:8181',
     archive: process.env.NODE_ARCHIVE,
@@ -93,7 +94,7 @@ import { ZkonZkProgram } from '../build/src/zkProgram.js';
   if (pendingTx.status === 'pending') {
     console.log(`Success! Request transaction sent.  
   Txn hash: ${pendingTx.hash}
-  Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
+  Block explorer hash: https://minascan.io/${process.env.NETWORK}/tx/${pendingTx.hash}`);
   }
   console.log('Waiting for transaction inclusion in a block.');
   await pendingTx.wait({ maxAttempts: 90 });

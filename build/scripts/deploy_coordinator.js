@@ -82,7 +82,7 @@ let pendingTx = await transaction.send();
 if (pendingTx.status === 'pending') {
     console.log(`Success! Deploy zkRequestCoordinator transaction sent. Deploying to ${coordinatorAddress.toBase58()}  
     Txn hash: ${pendingTx.hash}
-    Block explorer hash: https://minascan.io/devnet/tx/${pendingTx.hash}`);
+    Block explorer hash: https://minascan.io/${process.env.NETWORK}/tx/${pendingTx.hash}`);
 }
 console.log('Waiting for transaction inclusion in a block.');
 await pendingTx.wait({ maxAttempts: 90 });
