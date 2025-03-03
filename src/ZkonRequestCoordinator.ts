@@ -50,7 +50,7 @@ export class ZkonRequestCoordinator extends SmartContract {
 
   onlyOwner() {
     const currentOwner = this.owner.getAndRequireEquals();
-    currentOwner.assertEquals(this.sender.getAndRequireSignatureV2());
+    currentOwner.assertEquals(this.sender.getAndRequireSignature());
   }
 
   @method 
@@ -107,7 +107,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     const feePrice = this.feePrice.getAndRequireEquals();
     const totalAmount = feePrice.mul(requestAmount);
 
-    await ZkToken.transfer(this.sender.getAndRequireSignatureV2(), this.owner.getAndRequireEquals(), totalAmount);
+    await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
     
     //Get the Blockchain length
     const createdAt = this.self.network.blockchainLength
@@ -124,7 +124,7 @@ export class ZkonRequestCoordinator extends SmartContract {
   @method
   async recordRequestFullfillment(requestId: Field, proof: ZkonProof) {
     // Assert caller is the oracle
-    const caller = this.sender.getAndRequireSignatureV2();
+    const caller = this.sender.getAndRequireSignature();
     caller.assertEquals(this.oracle.getAndRequireEquals());
 
     await proof.verify();

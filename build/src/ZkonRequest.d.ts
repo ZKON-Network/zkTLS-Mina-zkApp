@@ -8,38 +8,37 @@ export declare let ZkonProof_: {
     new ({ proof, publicInput, publicOutput, maxProofsVerified, }: {
         proof: unknown;
         publicInput: import("./zkProgram.js").PublicArgumets;
-        publicOutput: import("o1js/dist/node/lib/provable/bool.js").Bool;
-        maxProofsVerified: 0 | 1 | 2;
-    }): {
-        verify(): void;
-        verifyIf(condition: import("o1js/dist/node/lib/provable/bool.js").Bool): void;
-        publicInput: import("./zkProgram.js").PublicArgumets;
-        publicOutput: import("o1js/dist/node/lib/provable/bool.js").Bool;
-        proof: unknown;
-        maxProofsVerified: 0 | 1 | 2;
-        shouldVerify: import("o1js/dist/node/lib/provable/bool.js").Bool;
-        toJSON(): import("o1js").JsonProof;
+        publicOutput: void;
+        maxProofsVerified: 0 | 2 | 1;
+    }): import("o1js").Proof<import("./zkProgram.js").PublicArgumets, void>;
+    fromJSON<S extends import("o1js/dist/node/lib/util/types.js").Subclass<typeof import("o1js").Proof>>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<import("o1js").Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 2 | 1, domainLog2?: number): Promise<import("o1js").Proof<Input, OutPut>>;
+    readonly provable: {
+        toFields: (value: import("o1js").Proof<any, any>) => import("o1js/dist/node/lib/provable/field.js").Field[];
+        toAuxiliary: (value?: import("o1js").Proof<any, any> | undefined) => any[];
+        fromFields: (fields: import("o1js/dist/node/lib/provable/field.js").Field[], aux: any[]) => import("o1js").Proof<any, any>;
+        sizeInFields(): number;
+        check: (value: import("o1js").Proof<any, any>) => void;
+        toValue: (x: import("o1js").Proof<any, any>) => import("o1js/dist/node/lib/proof-system/proof.js").ProofValue<any, any>;
+        fromValue: (x: import("o1js").Proof<any, any> | import("o1js/dist/node/lib/proof-system/proof.js").ProofValue<any, any>) => import("o1js").Proof<any, any>;
+        toCanonical?: ((x: import("o1js").Proof<any, any>) => import("o1js").Proof<any, any>) | undefined;
     };
-    publicInputType: typeof import("./zkProgram.js").PublicArgumets;
-    publicOutputType: typeof import("o1js/dist/node/lib/provable/bool.js").Bool & ((x: boolean | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/bool.js").Bool) => import("o1js/dist/node/lib/provable/bool.js").Bool);
+    publicInputType: import("o1js").FlexibleProvable<any>;
+    publicOutputType: import("o1js").FlexibleProvable<any>;
     tag: () => {
         name: string;
-        publicInputType: typeof import("./zkProgram.js").PublicArgumets;
-        publicOutputType: typeof import("o1js/dist/node/lib/provable/bool.js").Bool & ((x: boolean | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/bool.js").Bool) => import("o1js/dist/node/lib/provable/bool.js").Bool);
     };
-    fromJSON<S extends (new (...args: any) => import("o1js").Proof<unknown, unknown>) & {
-        prototype: import("o1js").Proof<any, any>;
-        fromJSON: typeof import("o1js").Proof.fromJSON;
-        dummy: typeof import("o1js").Proof.dummy;
-        publicInputType: import("o1js").FlexibleProvablePure<any>;
-        publicOutputType: import("o1js").FlexibleProvablePure<any>;
-        tag: () => {
-            name: string;
-        };
-    } & {
-        prototype: import("o1js").Proof<unknown, unknown>;
-    }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<import("o1js").Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
-    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<import("o1js").Proof<Input, OutPut>>;
+    publicFields(value: import("o1js").ProofBase<any, any>): {
+        input: import("o1js/dist/node/lib/provable/field.js").Field[];
+        output: import("o1js/dist/node/lib/provable/field.js").Field[];
+    };
+    _proofFromBase64(proofString: string, maxProofsVerified: 0 | 2 | 1): unknown;
+    _proofToBase64(proof: unknown, maxProofsVerified: 0 | 2 | 1): string;
+} & {
+    provable: import("o1js").Provable<import("o1js").Proof<import("./zkProgram.js").PublicArgumets, void>, import("o1js/dist/node/lib/proof-system/proof.js").ProofValue<{
+        commitment: bigint;
+        dataField: bigint;
+    }, void>>;
 };
 export declare class ZkonProof extends ZkonProof_ {
 }

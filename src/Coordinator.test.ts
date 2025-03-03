@@ -92,10 +92,9 @@ describe('Zkon Token Tests', () => {
           adminPublicKey: tokenAdmin,
         })
         await token.deploy({
-          admin: tokenAdmin,
           symbol: 'ZKON',
           src: '',
-          decimals: UInt8.from(9),
+          allowUpdates:true
         });
         await coordinator.deploy({
           oracle: oracleAddress,

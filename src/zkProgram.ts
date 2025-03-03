@@ -1,17 +1,17 @@
-import { Mina, Field, ZkProgram, Struct, createEcdsaV2, createForeignCurveV2,Crypto, Bool, Bytes, UInt8, ForeignCurveV2,Provable,assert} from 'o1js';
+import { Mina, Field, ZkProgram, Struct, createEcdsa, createForeignCurve,Crypto, Bool, Bytes, UInt8, ForeignCurve,Provable,assert} from 'o1js';
 
 // default bigint limb size
 const l = 88n;
 
 //Helper-classes
 class Bytes32 extends Bytes(32) {};
-class Secp256k1 extends createForeignCurveV2(Crypto.CurveParams.Secp256k1) {}
-class Ecdsa extends createEcdsaV2(Secp256k1) {}
+class Secp256k1 extends createForeignCurve(Crypto.CurveParams.Secp256k1) {}
+class Ecdsa extends createEcdsa(Secp256k1) {}
 
 /** Taken from [o1js](https://github.com/o1-labs/o1js/blob/996ebb3119ec087a0badc16ea8036766cb68d3fb/src/lib/provable/crypto/foreign-ecdsa.ts#L288)
  * 
 */
-function keccakOutputToScalar(hash: Bytes, Curve: typeof ForeignCurveV2) {
+function keccakOutputToScalar(hash: Bytes, Curve: typeof ForeignCurve) {
   const L_n = Curve.Scalar.sizeInBits;
   assert(L_n === 256, `Scalar sizes ${L_n} !== 256 not supported`);
   assert(hash.length === 32, `hash length ${hash.length} !== 32 not supported`);
@@ -105,7 +105,7 @@ const ZkonZkProgram = ZkProgram({
         ){
           checkHash(ECDSASign.messageHash.bytes).assertEquals(true, "Invalid Message Hash!")
           decommitment.assertEquals(commitment.commitment,"Response from proof-server invalid.");
-          const checkSignature = ECDSASign.signature.verifySignedHashV2(
+          const checkSignature = ECDSASign.signature.verifySignedHash(
             keccakOutputToScalar(ECDSASign.messageHash, Secp256k1), 
             ECDSASign.publicKey)
           

@@ -60,8 +60,8 @@ declare const RequestEvent_base: (new (value: {
         senderX: import("o1js/dist/node/lib/provable/field.js").Field;
         senderY: import("o1js/dist/node/lib/provable/field.js").Field;
     }) => {
-        fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
-        packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
+        fields?: Field[] | undefined;
+        packed?: [Field, number][] | undefined;
     };
     toJSON: (x: {
         id: import("o1js/dist/node/lib/provable/field.js").Field;
@@ -138,8 +138,8 @@ declare const ExternalRequestEvent_base: (new (value: {
         hash1: import("o1js/dist/node/lib/provable/field.js").Field;
         hash2: import("o1js/dist/node/lib/provable/field.js").Field;
     }) => {
-        fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
-        packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
+        fields?: Field[] | undefined;
+        packed?: [Field, number][] | undefined;
     };
     toJSON: (x: {
         id: import("o1js/dist/node/lib/provable/field.js").Field;
@@ -197,11 +197,11 @@ declare const RequestPaidEvent_base: (new (value: {
 } & {
     fromValue: (value: {
         zkApp: PublicKey | {
-            x: bigint | import("o1js/dist/node/lib/provable/field.js").Field;
-            isOdd: boolean | import("o1js/dist/node/lib/provable/bool.js").Bool;
+            x: Field | bigint;
+            isOdd: import("o1js").Bool | boolean;
         };
         requestsPaid: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field;
-        createdAt: bigint | UInt32;
+        createdAt: number | bigint | UInt32;
     }) => {
         zkApp: PublicKey;
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
@@ -212,8 +212,8 @@ declare const RequestPaidEvent_base: (new (value: {
         requestsPaid: import("o1js/dist/node/lib/provable/field.js").Field;
         createdAt: UInt32;
     }) => {
-        fields?: import("o1js/dist/node/lib/provable/field.js").Field[] | undefined;
-        packed?: [import("o1js/dist/node/lib/provable/field.js").Field, number][] | undefined;
+        fields?: Field[] | undefined;
+        packed?: [Field, number][] | undefined;
     };
     toJSON: (x: {
         zkApp: PublicKey;
@@ -245,38 +245,37 @@ export declare let ZkonProof_: {
     new ({ proof, publicInput, publicOutput, maxProofsVerified, }: {
         proof: unknown;
         publicInput: import("./zkProgram.js").PublicArgumets;
-        publicOutput: import("o1js/dist/node/lib/provable/bool.js").Bool;
-        maxProofsVerified: 0 | 1 | 2;
-    }): {
-        verify(): void;
-        verifyIf(condition: import("o1js/dist/node/lib/provable/bool.js").Bool): void;
-        publicInput: import("./zkProgram.js").PublicArgumets;
-        publicOutput: import("o1js/dist/node/lib/provable/bool.js").Bool;
-        proof: unknown;
-        maxProofsVerified: 0 | 1 | 2;
-        shouldVerify: import("o1js/dist/node/lib/provable/bool.js").Bool;
-        toJSON(): import("o1js").JsonProof;
+        publicOutput: void;
+        maxProofsVerified: 0 | 2 | 1;
+    }): Proof<import("./zkProgram.js").PublicArgumets, void>;
+    fromJSON<S extends import("o1js/dist/node/lib/util/types.js").Subclass<typeof import("o1js/dist/node/lib/proof-system/proof.js").Proof>>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
+    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 2 | 1, domainLog2?: number): Promise<Proof<Input, OutPut>>;
+    readonly provable: {
+        toFields: (value: Proof<any, any>) => import("o1js/dist/node/lib/provable/field.js").Field[];
+        toAuxiliary: (value?: Proof<any, any> | undefined) => any[];
+        fromFields: (fields: import("o1js/dist/node/lib/provable/field.js").Field[], aux: any[]) => Proof<any, any>;
+        sizeInFields(): number;
+        check: (value: Proof<any, any>) => void;
+        toValue: (x: Proof<any, any>) => import("o1js/dist/node/lib/proof-system/proof.js").ProofValue<any, any>;
+        fromValue: (x: Proof<any, any> | import("o1js/dist/node/lib/proof-system/proof.js").ProofValue<any, any>) => Proof<any, any>;
+        toCanonical?: ((x: Proof<any, any>) => Proof<any, any>) | undefined;
     };
-    publicInputType: typeof import("./zkProgram.js").PublicArgumets;
-    publicOutputType: typeof import("o1js/dist/node/lib/provable/bool.js").Bool & ((x: boolean | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/bool.js").Bool) => import("o1js/dist/node/lib/provable/bool.js").Bool);
+    publicInputType: import("o1js").FlexibleProvable<any>;
+    publicOutputType: import("o1js").FlexibleProvable<any>;
     tag: () => {
         name: string;
-        publicInputType: typeof import("./zkProgram.js").PublicArgumets;
-        publicOutputType: typeof import("o1js/dist/node/lib/provable/bool.js").Bool & ((x: boolean | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/bool.js").Bool) => import("o1js/dist/node/lib/provable/bool.js").Bool);
     };
-    fromJSON<S extends (new (...args: any) => Proof<unknown, unknown>) & {
-        prototype: Proof<any, any>;
-        fromJSON: typeof Proof.fromJSON;
-        dummy: typeof Proof.dummy;
-        publicInputType: import("o1js").FlexibleProvablePure<any>;
-        publicOutputType: import("o1js").FlexibleProvablePure<any>;
-        tag: () => {
-            name: string;
-        };
-    } & {
-        prototype: Proof<unknown, unknown>;
-    }>(this: S, { maxProofsVerified, proof: proofString, publicInput: publicInputJson, publicOutput: publicOutputJson, }: import("o1js").JsonProof): Promise<Proof<import("o1js").InferProvable<S["publicInputType"]>, import("o1js").InferProvable<S["publicOutputType"]>>>;
-    dummy<Input, OutPut>(publicInput: Input, publicOutput: OutPut, maxProofsVerified: 0 | 1 | 2, domainLog2?: number | undefined): Promise<Proof<Input, OutPut>>;
+    publicFields(value: import("o1js").ProofBase<any, any>): {
+        input: import("o1js/dist/node/lib/provable/field.js").Field[];
+        output: import("o1js/dist/node/lib/provable/field.js").Field[];
+    };
+    _proofFromBase64(proofString: string, maxProofsVerified: 0 | 2 | 1): unknown;
+    _proofToBase64(proof: unknown, maxProofsVerified: 0 | 2 | 1): string;
+} & {
+    provable: import("o1js").Provable<Proof<import("./zkProgram.js").PublicArgumets, void>, import("o1js/dist/node/lib/proof-system/proof.js").ProofValue<{
+        commitment: bigint;
+        dataField: bigint;
+    }, void>>;
 };
 export declare class ZkonProof extends ZkonProof_ {
 }
@@ -293,10 +292,10 @@ export declare class ZkonRequestCoordinator extends SmartContract {
     setToken(zkonToken: PublicKey): Promise<void>;
     events: {
         requested: typeof RequestEvent;
-        fullfilled: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/field.js").Field | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst) => import("o1js/dist/node/lib/provable/field.js").Field);
+        fullfilled: typeof import("o1js/dist/node/lib/provable/field.js").Field & ((x: string | number | bigint | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldConst | import("o1js/dist/node/lib/provable/core/fieldvar.js").FieldVar | import("o1js/dist/node/lib/provable/field.js").Field) => import("o1js/dist/node/lib/provable/field.js").Field);
         requestsPaid: typeof RequestPaidEvent;
     };
-    sendRequest(requester: PublicKey, hash1: Field, hash2: Field): Promise<import("o1js/dist/node/lib/provable/field.js").Field>;
+    sendRequest(requester: PublicKey, hash1: Field, hash2: Field, nonce?: Field): Promise<import("o1js/dist/node/lib/provable/field.js").Field>;
     prepayRequest(requestAmount: UInt64, beneficiary: PublicKey): Promise<void>;
     recordRequestFullfillment(requestId: Field, proof: ZkonProof): Promise<void>;
 }

@@ -48,10 +48,9 @@ describe('Zkon Token Tests', () => {
         adminPublicKey: tokenAdmin,
       })
       await token.deploy({
-        admin: tokenAdmin,
-        decimals: UInt8.from(9),
-        symbol: "ZKON",
-        src: ""
+        symbol: 'ZKON',
+        src: '',
+        allowUpdates:true
       });
     });
     await txn.prove();

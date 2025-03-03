@@ -1,7 +1,7 @@
 import { FungibleToken, FungibleTokenAdmin } from 'mina-fungible-token';
 import { ZkonRequestCoordinator } from './ZkonRequestCoordinator.js';
 import { ZkonRequest } from './ZkonRequest.js';
-import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, provablePure, UInt8 } from 'o1js';
+import { Field, Mina, PrivateKey, PublicKey, AccountUpdate, UInt64, Poseidon, provablePure } from 'o1js';
 import { StringCircuitValue } from './String.js';
 let proofsEnabled = false;
 describe('Zkon Request Example', () => {
@@ -44,10 +44,9 @@ describe('Zkon Request Example', () => {
                 adminPublicKey: tokenAdmin,
             });
             await token.deploy({
-                admin: tokenAdmin,
-                decimals: UInt8.from(9),
-                symbol: "ZKON",
-                src: ""
+                symbol: 'ZKON',
+                src: '',
+                allowUpdates: true
             });
             await coordinator.deploy({
                 oracle: oracleAddress,
@@ -144,8 +143,8 @@ describe('Zkon Request Example', () => {
         expect(dehashed.toBase58()).toEqual(zkRequestAddress.toBase58()); //The zkApp is the sender    
     });
     function segmentHash(ipfsHashFile) {
-        const ipfsHash0 = ipfsHashFile.slice(0, 30); // first part of the ipfsHash
-        const ipfsHash1 = ipfsHashFile.slice(30); // second part of the ipfsHash
+        const ipfsHash0 = ipfsHashFile.slice(0, 29); // first part of the ipfsHash
+        const ipfsHash1 = ipfsHashFile.slice(29); // second part of the ipfsHash
         const field1 = new StringCircuitValue(ipfsHash0).toField();
         const field2 = new StringCircuitValue(ipfsHash1).toField();
         return { field1, field2 };

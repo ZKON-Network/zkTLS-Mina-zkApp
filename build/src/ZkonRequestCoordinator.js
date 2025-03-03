@@ -57,7 +57,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     }
     onlyOwner() {
         const currentOwner = this.owner.getAndRequireEquals();
-        currentOwner.assertEquals(this.sender.getAndRequireSignatureV2());
+        currentOwner.assertEquals(this.sender.getAndRequireSignature());
     }
     async setFeePrice(feePrice) {
         this.onlyOwner();
@@ -71,9 +71,9 @@ export class ZkonRequestCoordinator extends SmartContract {
         this.onlyOwner();
         this.zkonToken.set(zkonToken);
     }
-    async sendRequest(requester, hash1, hash2) {
+    async sendRequest(requester, hash1, hash2, nonce = Field(1)) {
         const currentRequestCount = this.requestCount.getAndRequireEquals();
-        const requestId = Poseidon.hash([currentRequestCount.toFields()[0], requester.toFields()[0]]);
+        const requestId = Poseidon.hash([currentRequestCount.toFields()[0], requester.toFields()[0], nonce]);
         const sender = requester.toFields();
         const event = new RequestEvent({
             id: requestId,
@@ -90,7 +90,7 @@ export class ZkonRequestCoordinator extends SmartContract {
         const ZkToken = new FungibleToken(this.zkonToken.getAndRequireEquals());
         const feePrice = this.feePrice.getAndRequireEquals();
         const totalAmount = feePrice.mul(requestAmount);
-        await ZkToken.transfer(this.sender.getAndRequireSignatureV2(), this.owner.getAndRequireEquals(), totalAmount);
+        await ZkToken.transfer(this.sender.getAndRequireSignature(), this.owner.getAndRequireEquals(), totalAmount);
         //Get the Blockchain length
         const createdAt = this.self.network.blockchainLength;
         const event = new RequestPaidEvent({
@@ -102,7 +102,7 @@ export class ZkonRequestCoordinator extends SmartContract {
     }
     async recordRequestFullfillment(requestId, proof) {
         // Assert caller is the oracle
-        const caller = this.sender.getAndRequireSignatureV2();
+        const caller = this.sender.getAndRequireSignature();
         caller.assertEquals(this.oracle.getAndRequireEquals());
         await proof.verify();
         this.emitEvent('fullfilled', requestId);
@@ -149,7 +149,7 @@ __decorate([
 __decorate([
     method.returns(Field),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [PublicKey, Field, Field]),
+    __metadata("design:paramtypes", [PublicKey, Field, Field, Field]),
     __metadata("design:returntype", Promise)
 ], ZkonRequestCoordinator.prototype, "sendRequest", null);
 __decorate([

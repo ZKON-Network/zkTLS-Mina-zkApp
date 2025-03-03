@@ -1,4 +1,4 @@
-import { Bool } from 'o1js';
+import { Bool, Field } from 'o1js';
 declare const UInt8_base: (new (value: {
     value: import("o1js/dist/node/lib/provable/field").Field;
 }) => {
@@ -22,8 +22,8 @@ declare const UInt8_base: (new (value: {
     toInput: (x: {
         value: import("o1js/dist/node/lib/provable/field").Field;
     }) => {
-        fields?: import("o1js/dist/node/lib/provable/field").Field[] | undefined;
-        packed?: [import("o1js/dist/node/lib/provable/field").Field, number][] | undefined;
+        fields?: Field[] | undefined;
+        packed?: [Field, number][] | undefined;
     };
     toJSON: (x: {
         value: import("o1js/dist/node/lib/provable/field").Field;

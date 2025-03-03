@@ -1,5 +1,5 @@
 import { PrivateKey, PublicKey } from "o1js"
-import { TestPublicKey } from "o1js/dist/node/lib/mina/local-blockchain"
+import { TestPublicKey } from "o1js/dist/node/lib/mina/v1/local-blockchain"
 
 /** Creates a {@link TestPublicKey} that does not have an account on the chain yet.
  * This is used for non-min accounts

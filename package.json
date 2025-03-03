@@ -39,14 +39,14 @@
     "typescript": "^5.4.3"
   },
   "peerDependencies": {
-    "o1js": "^1.8.0"
+    "o1js": "^2.3.0"
   },
   "dependencies": {
     "@noble/curves": "^1.4.2",
     "dotenv": "^16.4.5",
-    "mina-fungible-token": "git+https://github.com/MinaFoundation/mina-fungible-token.git#971bf58962d47870d5bcf5a220dc3a80ca5321a0",
-    "mina-signer": "^3.0.5",
+    "mina-fungible-token": "git+https://github.com/MinaFoundation/mina-fungible-token.git#8dbf75a4a50d236d9a9ab137a7fd451bafddae41",
+    "mina-signer": "^3.0.7",
     "node-fetch": "^3.3.2",
-    "zkapp-cli": "^0.21.3"
+    "zkapp-cli": "^0.22.5"
   }
 }

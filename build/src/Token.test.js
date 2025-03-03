@@ -1,4 +1,4 @@
-import { Mina, PrivateKey, AccountUpdate, UInt64, UInt8, } from 'o1js';
+import { Mina, PrivateKey, AccountUpdate, UInt64, } from 'o1js';
 import { FungibleToken, FungibleTokenAdmin } from 'mina-fungible-token';
 let proofsEnabled = false;
 const Local = await Mina.LocalBlockchain({
@@ -26,10 +26,9 @@ describe('Zkon Token Tests', () => {
                 adminPublicKey: tokenAdmin,
             });
             await token.deploy({
-                admin: tokenAdmin,
-                decimals: UInt8.from(9),
-                symbol: "ZKON",
-                src: ""
+                symbol: 'ZKON',
+                src: '',
+                allowUpdates: true
             });
         });
         await txn.prove();
